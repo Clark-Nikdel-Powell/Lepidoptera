@@ -157,7 +157,8 @@ function get_tweets($number, $handle) {
 			$tweet = $tweets[$i]->text;
 	
 			// Add hyperlink html tags to any urls, twitter ids or hashtags in the tweet.
-			$tweet = preg_replace('/(https?:\/\/[^\s"<>]+)/','<a href="$1">$1</a>', $tweet);
+			$tweet = preg_replace('/(\.\.\.+)/', '…', $tweet);
+			$tweet = preg_replace('/(https?:\/\/[^\s"<>…]+)/','<a href="$1">$1</a>', $tweet);
 			$tweet = preg_replace('/(^|[\n\s])@([^\s"\t\n\r<:]*)/is', '$1<a href="http://twitter.com/$2">@$2</a>', $tweet);
 			$tweet = preg_replace('/(^|[\n\s])#([^\s"\t\n\r<:]*)/is', '$1<a href="http://twitter.com/search?q=%23$2">#$2</a>', $tweet);
 
