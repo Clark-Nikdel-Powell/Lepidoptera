@@ -1,4 +1,4 @@
-Social-Boxes
+Lepidoptera
 ============
 
-Automate code for those pesky social media boxes, get recent tweets, and more!
+Social media tools and functions.
