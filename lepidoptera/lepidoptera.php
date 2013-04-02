@@ -103,7 +103,7 @@ function LEPI_get_fb_button($args=0) {
 	$vars = wp_parse_args($args, $defaults);
 	
 	// build button div
-	$button = '<div class="fb-like" data-href="'.$vars['href'].'" data-send="'.$vars['send'].'" data-width="'.$vars['width'].'" data-show-faces="'.$vars['show-faces'].'"';
+	$button = '<div class="fb-like" data-href="'.urlencode($vars['href']).'" data-send="'.$vars['send'].'" data-width="'.$vars['width'].'" data-show-faces="'.$vars['show-faces'].'"';
 	if ($vars['layout'] != 'standard') { $button .= ' data-layout="'.$vars['layout'].'"'; }
 	if ($vars['font'] != $defaults['font']) { $button .= ' data-font="'.$vars['font'].'"'; }
 	if ($vars['colorscheme'] != $defaults['colorscheme']) { $button .= ' data-colorscheme="'.$vars['colorscheme'].'"'; }
@@ -151,7 +151,7 @@ function LEPI_get_tw_button($args=0) {
 	
 	// build button div
 	$button = '<a href="https://twitter.com/share" class="twitter-share-button" data-text="'.$vars['text'].'"';
-	if ($vars['url']) { $button .= ' data-url="'.$vars['url'].'"'; }
+	if ($vars['url']) { $button .= ' data-url="'.urlencode($vars['url']).'"'; }
 	if ($vars['hashtags']) { $button .= ' data-hashtags="'.$vars['hashtags'].'"'; }
 	if ($vars['via']) { $button .= ' data-via="'.$vars['via'].'"'; }
 	if ($vars['count'] != $defaults['count']) { $button .= ' data-count="'.$vars['count'].'"'; }
@@ -169,6 +169,46 @@ function LEPI_tw_button($args=0) {
 	echo LEPI_get_tw_button($args);
 	
 } // LEPI_tw_button()
+
+/** ===============================================================================
+ *
+ * Pinterest Pin Button
+ * 
+ * Arguments:
+ *   'url'         : URL of pin
+ *   'media'       : URL to image to pin
+ *   'description' : Text attached to pin
+ *   'pin-config'  : 'beside', 'above', 'none'
+ * 
+**/
+
+// returns button
+function LEPI_get_pin_button($args=0) {
+	global $post;
+	
+	$defaults = array(
+		'url'         => get_permalink($post->ID)
+	,	'media'       => wp_get_attachment_url(get_post_thumbnail_id($post->ID))
+	,	'description' => get_the_title($post->ID)
+	,	'pin-config'  => 'beside'
+	);
+	$vars = wp_parse_args($args, $defaults);
+	
+	// build button div
+	$button = '<a href="//pinterest.com/pin/create/button/?url='.urlencode($vars['url']).'&media='.$vars['media'].'&description='.$vars['description'].'" data-pin-config="'.$vars['pin-config'].'" data-pin-do="buttonPin" ><img src="//assets.pinterest.com/images/pidgets/pin_it_button.png" /></a>'.PHP_EOL;
+	
+	// put js in the footer, return button
+	wp_enqueue_script('pinterest', '//assets.pinterest.com/js/pinit.js', array(), false, true);
+	return $button;
+	
+} // LEPI_get_pin_button()
+
+// displays button
+function LEPI_pin_button($args=0) {
+	
+	echo LEPI_get_pin_button($args);
+	
+} // LEPI_pin_button()
 
 /*
 ===============================================================================
