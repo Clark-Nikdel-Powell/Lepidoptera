@@ -1,4 +1,4 @@
-<?
+<?php
 /*
 Plugin Name: Lepidoptera
 Plugin URI: http://clarknikdelpowell.com/plugins/social-boxes
@@ -176,7 +176,6 @@ function LEPI_tw_button($args=0) {
   Site's Social Media Boxes
 
 ===============================================================================
-*/
 
 function social_boxes($args = array()) {
 	global $post;
@@ -200,18 +199,6 @@ function social_boxes($args = array()) {
 		'facebook_url'			=> get_option('facebook_url'),
 		'gplus_url'				=> get_option('gplus_url')
 	);
-	
-	/* 
-	Quick Notes
-	-----------
-	
-	1. Facebook button formats: button_count or box_count
-	2. Google+ button options: 
-			Size: small medium standard tall
-			Annotation: none bubble inline
-		https://developers.google.com/+/plugins/+1button/
-	
-	*/
 	
 	$args = wp_parse_args( $args, $defaults );
 	
@@ -318,4 +305,5 @@ function get_tweets($number, $handle) {
 	return $tweet_data;
 
 }
+*/
 
