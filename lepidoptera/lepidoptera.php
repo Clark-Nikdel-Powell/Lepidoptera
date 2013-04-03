@@ -210,140 +210,47 @@ function LEPI_pin_button($args=0) {
 	
 } // LEPI_pin_button()
 
-/*
-===============================================================================
+/** ===============================================================================
+ *
+ * Get tweets with Twitter's search API
+ * 
+ * @param int    $tweet_count    Number of tweets to return
+ * @param string $twitter_handle Twitter handle.. duh
+ * 
+**/
 
-  Site's Social Media Boxes
-
-===============================================================================
-
-function social_boxes($args = array()) {
-	global $post;
-
-	$defaults = array(
-		'ID'				=> $post->ID,
-		'fb_btn_format' 	=> 'button_count',
-		'fb_btn_width' 		=> "300",
-		'fb_btn_faces' 		=> false,
-		'gp_btn_size'       => 'medium',
-		'gp_btn_annotation' => 'bubble',
-		'gp_btn_width'		=> '300',
-		'fb_box_width'		=> '292',
-		'fb_box_height'		=>	'220',
-		'fb_box_faces'			=> false,
-		'fb_box_stream'		=> false,		
-		'fb_box_header'		=> true,
-		'fb_box_border'		=> '#AAAAAA',
-		'twitter_handle'		=> get_option('twitter_handle'),
-		'youtube_url'			=> get_option('youtube_url'),
-		'facebook_url'			=> get_option('facebook_url'),
-		'gplus_url'				=> get_option('gplus_url')
-	);
+function LEPI_get_tweets($tweet_count, $twitter_handle) {
 	
-	$args = wp_parse_args( $args, $defaults );
+	$transient_name = $twitter_handle.'_twitter_search_results';
 	
-	// Get URLs, Handles, Links
-	$gp_url 		= 	$args['gplus_url'];
-	$fb_url 		= 	$args['facebook_url'];
-	$tw_handle 	= 	$args['twitter_handle'];
-	$yt_url 		= 	$args['youtube_url'];
-	$page_url 	=  get_permalink($args['ID']);
-
-	if (is_home()) {$page_url = WP_SITEURL;}
+	$tweets = get_transient($transient_name);
 	
-	// Boot Up the Javascript!
-	$social_data['js']['facebook'] = '<div id="fb-root"></div>
-	<script>(function(d, s, id) {
-	  var js, fjs = d.getElementsByTagName(s)[0];
-	  if (d.getElementById(id)) return;
-	  js = d.createElement(s); js.id = id;
-	  js.src = "//connect.facebook.net/en_US/all.js#xfbml=1";
-	  fjs.parentNode.insertBefore(js, fjs);
-	}(document, "script", "facebook-jssdk"));</script>';
-
-	$social_data['js']['google'] = '<script type="text/javascript">
-	  (function() {
-	    var po = document.createElement("script"); po.type = "text/javascript"; po.async = true;
-	    po.src = "https://apis.google.com/js/plusone.js";
-	    var s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(po, s);
-	  })();
-	</script>';
-
-
-	// Set up some buttons	
-	$social_data['button']['facebook'] = '<div class="fb-like" data-href="'.$fb_url.'" data-send="false" data-layout="'.$args['fb_btn_format'].'" data-width="'.$args['fb_btn_width'].'" data-show-faces="'.$args['fb_btn_faces'].'"></div>';
-	$social_data['button']['twitter'] = '<a href="https://twitter.com/share" class="twitter-share-button" data-url="'.$page_url.'" data-dnt="true">Tweet</a><script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>';
-	$social_data['button']['gplus'] = '<div class="g-plusone" data-size="'.$args['gp_btn_size'].'" data-annotation="'.$args['gp_btn_annotation'].'" data-width="'.$args['gp_btn_width'].'"></div>';
-	
-	
-	// Facebook Like Box
-	$social_data['box']['facebook'] = '<div class="fb-like-box" data-href="'.$fb_url.'" data-width="'.$args['fb_box_width'].'" data-height="'.$args['fb_box_height'].'" data-show-faces="'.$args['fb_box_faces'].'" data-stream="'.$args['fb_box_stream'].'" data-header="'.$args['fb_box_header'].'" data-border-color="'.$args['fb_box_border'].'"></div>';
-	
-	
-	// Ye Mighty Twitter Widget Data, now with more caching!
-	
-	// Display tweets from the cache.
-	$cached_tweets = get_transient( $tw_handle.'_twitter_search_results' );
-	
-	if ($cached_tweets) {
-	
-		$social_data['tweets'] = $cached_tweets;
-	
-	} else {
-	
-	// Cache file not found, or old. Fetch recent tweets from Twitter.
-	$date_limit = date('Y-m-d', strtotime('9 days ago'));
-	$tweets_result = file_get_contents('http://search.twitter.com/search.json?q=from:'.$tw_handle.'%20since:'.$date_limit);
-	$social_data['tweets'] = json_decode($tweets_result);
-	
-	set_transient( $tw_handle.'_twitter_search_results', $social_data['tweets'], 1 * HOUR_IN_SECONDS );
-	
-	}
-	
-	// Links
-	$social_data['link']['youtube'] = '<a class="youtube" href="'.$yt_url.'">Youtube</a>';	
-	
-	return $social_data;
-
-}
-
-function get_tweets($number, $handle) {
-	$ancestor = highest_ancestor();
-
-	//Get tweets, condense variable
-	$social_data = social_boxes('twitter_handle='.$handle);
-	$tweets = $social_data['tweets']->results;
-	
-	// Set up a count based on user input
-	$count = $number-1;
-	if (count($tweets) < $count) {$count = count($tweets)-1;}
-	for ($i = 0; $i <= $count; $i++) {
-	
-	if ($tweets[$i]) {
-	
-		$reply_filter = strpos($tweets[$i]->text, '@', 0);
-		$rt_filter = strpos($tweets[$i]->text, 'RT', 0);
-	
-			if (($reply_filter !== 0 && $rt_filter !== 0) || ($reply_filter === false && $rt_filter === false)) {
-	
-			$tweet = $tweets[$i]->text;
+	if (!$tweets) {
+			
+		$date_limit = date('Y-m-d', strtotime('10 days ago'));
+		$tweets_search = file_get_contents('http://search.twitter.com/search.json?q=from:'.$twitter_handle.'%20since:'.$date_limit.'%20exclude:retweets%20exclude:replies&rpp=10&result_type=recent');
+		$tweets_search = json_decode($tweets_search);
+		
+		$tweets = array();
+		foreach ($tweets_search->results as $tweet) {
+			$tweet_text = $tweet->text;
 	
 			// Add hyperlink html tags to any urls, twitter ids or hashtags in the tweet.
-			$tweet = preg_replace('/(\.\.\.+)/', '…', $tweet);
-			$tweet = preg_replace('/(https?:\/\/[^\s"<>…]+)/','<a href="$1">$1</a>', $tweet);
-			$tweet = preg_replace('/(^|[\n\s])@([^\s"\t\n\r<:]*)/is', '$1<a href="http://twitter.com/$2">@$2</a>', $tweet);
-			$tweet = preg_replace('/(^|[\n\s])#([^\s"\t\n\r<:]*)/is', '$1<a href="http://twitter.com/search?q=%23$2">#$2</a>', $tweet);
-
-			// Store timestamp and formatted tweet
-			$tweet_data[$i]['timestamp'] = strtotime($tweets[$i]->created_at);	
-			$tweet_data[$i]['text'] = $tweet;
+			$tweet_text = preg_replace('/(\.\.\.+)/', '…', $tweet_text);
+			$tweet_text = preg_replace('/(https?:\/\/[^\s"<>…]+)/','<a href="$1">$1</a>', $tweet_text);
+			$tweet_text = preg_replace('/(^|[\n\s])@([^\s"\t\n\r<:]*)/is', '$1<a href="http://twitter.com/$2">@$2</a>', $tweet_text);
+			$tweet_text = preg_replace('/(^|[\n\s])#([^\s"\t\n\r<:]*)/is', '$1<a href="http://twitter.com/search?q=%23$2">#$2</a>', $tweet_text);
 			
-			} elseif ($count + 1 < count($tweets)) {$count++;}
-		} //endif
-	} //endfor
-	
-	return $tweet_data;
+			$tweets[] = array(
+				'text'      => $tweet_text
+			,	'timestamp' => strtotime($tweet->created_at)
+			);
+		}
+		
+		set_transient($transient_name, $tweets, 1 * HOUR_IN_SECONDS);
+		
+	}
+	return array_slice($tweets,	0, $tweet_count);
 
-}
-*/
+} // LEPI_get_tweets()
 
