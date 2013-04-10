@@ -225,7 +225,7 @@ function LEPI_get_tweets($tweet_count, $twitter_handle) {
 	
 	$tweets = get_transient($transient_name);
 	
-	if (!$tweets) {
+	if (!isset($tweets)) {
 			
 		$date_limit = date('Y-m-d', strtotime('10 days ago'));
 		$tweets_search = file_get_contents('http://search.twitter.com/search.json?q=from:'.$twitter_handle.'%20since:'.$date_limit.'%20exclude:retweets%20exclude:replies&rpp=10&result_type=recent');
@@ -241,9 +241,16 @@ function LEPI_get_tweets($tweet_count, $twitter_handle) {
 			$tweet_text = preg_replace('/(^|[\n\s])@([^\s"\t\n\r<:]*)/is', '$1<a href="http://twitter.com/$2">@$2</a>', $tweet_text);
 			$tweet_text = preg_replace('/(^|[\n\s])#([^\s"\t\n\r<:]*)/is', '$1<a href="http://twitter.com/search?q=%23$2">#$2</a>', $tweet_text);
 			
+			// Time zone offsets
+			$estTimezone = new DateTimeZone('America/New_York');
+			$gmtTimezone = new DateTimeZone('GMT');
+			$timestamp   = new DateTime($tweet->created_at, $gmtTimezone);
+			$offset 		 = $estTimezone->getOffset($timestamp);
+			$processed_time = $timestamp->format('U') + $offset;
+			
 			$tweets[] = array(
 				'text'      => $tweet_text
-			,	'timestamp' => strtotime($tweet->created_at)
+			,	'timestamp' => $processed_time
 			);
 		}
 		
