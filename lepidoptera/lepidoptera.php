@@ -225,7 +225,7 @@ function LEPI_get_tweets($tweet_count, $twitter_handle) {
 	
 	$tweets = get_transient($transient_name);
 	
-	if (!isset($tweets)) {
+	if (!$tweets) {
 			
 		$date_limit = date('Y-m-d', strtotime('10 days ago'));
 		$tweets_search = file_get_contents('http://search.twitter.com/search.json?q=from:'.$twitter_handle.'%20since:'.$date_limit.'%20exclude:retweets%20exclude:replies&rpp=10&result_type=recent');
