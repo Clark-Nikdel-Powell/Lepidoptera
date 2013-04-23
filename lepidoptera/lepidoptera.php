@@ -151,9 +151,9 @@ function LEPI_get_tw_button($args=0) {
 	
 	// build button div
 	$button = '<a href="https://twitter.com/share" class="twitter-share-button" data-text="'.$vars['text'].'"';
-	if ($vars['url']) { $button .= ' data-url="'.urlencode($vars['url']).'"'; }
+	if ($vars['url']) { $button .= ' data-url="'.$vars['url'].'"'; }
 	if ($vars['hashtags']) { $button .= ' data-hashtags="'.$vars['hashtags'].'"'; }
-	if ($vars['via']) { $button .= ' data-via="'.$vars['via'].'"'; }
+	if ($vars['via']) { $button .= ' data-via="'.$vars['via'].'" '; }
 	if ($vars['count'] != $defaults['count']) { $button .= ' data-count="'.$vars['count'].'"'; }
 	$button .= '>Tweet</a>';
 	$button .= '<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>'.PHP_EOL;
