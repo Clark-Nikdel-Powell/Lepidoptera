@@ -32,6 +32,7 @@ function social_info() {
 	add_settings_section( 'GENERAL_social', 'Social Media Info', 'GENERAL_social_callback', 'general' );
 	
 	add_settings_field( 'facebook_url', 'Facebook URL', 'facebook_callback', 'general', 'GENERAL_social' );
+	add_settings_field( 'gplus_url', 'Google+ URL', 'gplus_callback', 'general', 'GENERAL_social' );
 	add_settings_field( 'twitter_handle', 'Twitter Handle', 'twitter_callback', 'general', 'GENERAL_social' );
 	add_settings_field( 'youtube_url', 'YouTube URL', 'youtube_callback', 'general', 'GENERAL_social' );
 	add_settings_field( 'vimeo_url', 'Vimeo URL', 'vimeo_callback', 'general', 'GENERAL_social' );
@@ -39,6 +40,7 @@ function social_info() {
 	add_settings_field( 'rss_url', 'RSS URL', 'rss_callback', 'general', 'GENERAL_social' );
 	
 	register_setting( 'general', 'facebook_url' );
+	register_setting( 'general', 'gplus_url' );
 	register_setting( 'general', 'twitter_handle' );
 	register_setting( 'general', 'youtube_url' );
 	register_setting( 'general', 'vimeo_url' );
@@ -51,6 +53,9 @@ function GENERAL_social_callback() { echo ''; }
 
 function facebook_callback($args) {
 	echo '<input type="text" id="facebook_url" name="facebook_url" value="'.get_option('facebook_url').'" style="width:70%" />';
+}
+function gplus_callback($args) {
+	echo '<input type="text" id="gplus_url" name="gplus_url" value="'.get_option('gplus_url').'" style="width:70%" />';
 }
 function twitter_callback($args) {
 	echo '@<input type="text" id="twitter_handle" name="twitter_handle" value="'.get_option('twitter_handle').'" style="width:70%" />';
@@ -122,6 +127,45 @@ function LEPI_fb_button($args=0) {
 	echo LEPI_get_fb_button($args);
 	
 } // LEPI_fb_button()
+
+/** ===============================================================================
+ *
+ * Google +1 Button
+ * 
+ * Arguments:
+ *   'href'        : URL to like
+ *   'size'        : 'small', 'medium', 'standard', 'tall'
+ * 
+**/
+
+// pull in google javascript sdk only once
+function GP_SDK() { include_once('gp-sdk.php'); }
+
+// returns button
+function LEPI_get_gp_button($args=0) {
+	
+	$defaults = array(
+		'href'        => get_option('gplus_url')
+	,	'size'        => 'medium'
+	);
+	$vars = wp_parse_args($args, $defaults);
+	
+	// build button div
+	$button = '<g:plusone size="'. $vars[ 'size' ] .'"></g:plusone>';
+	
+	// put sdk in the footer, return button
+	add_action('wp_footer', 'GP_SDK');
+	return $button;
+	
+} // LEPI_get_fb_button()
+
+// displays button
+function LEPI_gp_button($args=0) {
+	
+	echo LEPI_get_gp_button($args);
+	
+} // LEPI_gp_button()
+
 
 /** ===============================================================================
  *
@@ -273,11 +317,11 @@ function LEPI_get_tweets($tweet_count, $twitter_handle) {
 function LEPI_get_yelps($args=0) {
 
 $defaults = array(
-	'biz_slug'    	=> ''
-,	'con_key'    	=> ''
-,	'con_secret'	=> ''
-,	'token'			=> ''
-,	'token_secret'	=> ''
+	'biz_slug'    	=> 'wruck-paupore-pc-dyer'
+,	'con_key'    	=> 'UiL6-QkZdAbSm9-5U624vw'
+,	'con_secret'	=> 'bWhWrY-TObvrlyfjwq03rJ6J-j0'
+,	'token'			=> 'ZVqfGxA-ENqM5191YljSqRChp8HrQF9Q'
+,	'token_secret'	=> 'yYbGafCHOEy5pKDX6pwGgokdZL0'
 );
 $vars = wp_parse_args($args, $defaults);
 
@@ -322,7 +366,9 @@ curl_close($ch);
 // Handle Yelp response data
 $response = json_decode($data);
 
+$arr = (array) $response;
+
 // Return the data!
-return $response;
+return $arr;
 
 }
