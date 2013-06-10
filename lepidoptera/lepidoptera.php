@@ -304,14 +304,18 @@ function LEPI_get_tweets($max_tweets, $twitter_id) {
 	'user_secret'     => get_option('tw_access_token_secret')
 	));
 
+	// Build the request. Full param list here: https://dev.twitter.com/docs/api/1.1/get/statuses/user_timeline
+	// Because retweets and replies are filtered out AFTER getting tweets, the default count is $max_tweets plus 20,
+	// (for good measure) and is pared down in the foreach() loop below.
 	$code    = $tmhOAuth->request('GET', $tmhOAuth->url('1/statuses/user_timeline'), array(
 	  'screen_name' => $twitter_id,
-	  'count' => $max_tweets,
-	  'include_rts' => true,
-	  'include_entities' => true
+	  'count' => $max_tweets+20,
+	  'include_rts' => false,
+	  'include_entities' => false,
+	  'exclude_replies'	=> true
 	));
 
-	$transient_name = $twitter_handle.'_twitter_search_results';
+	$transient_name = $twitter_id.'_twitter_search_results';
 
 //	delete_transient($transient_name);
 	$tweets_raw = get_transient($transient_name);
@@ -325,26 +329,35 @@ function LEPI_get_tweets($max_tweets, $twitter_id) {
 	  $tweets_raw = json_decode($tmhOAuth->response['response'], true);
 	}
 
+	$limit = 0;
+
 	foreach ($tweets_raw as $tweet) {
-		$tweet_text = $tweet['text'];
 
-		// Add hyperlink html tags to any urls, twitter ids or hashtags in the tweet.
-		$tweet_text = preg_replace('/(\.\.\.+)/', '…', $tweet_text);
-		$tweet_text = preg_replace('/(https?:\/\/[^\s"<>…]+)/','<a href="$1">$1</a>', $tweet_text);
-		$tweet_text = preg_replace('/(^|[\n\s])@([^\s"\t\n\r<:]*)/is', '$1<a href="http://twitter.com/$2">@$2</a>', $tweet_text);
-		$tweet_text = preg_replace('/(^|[\n\s])#([^\s"\t\n\r<:]*)/is', '$1<a href="http://twitter.com/search?q=%23$2">#$2</a>', $tweet_text);
+		if ($limit < $max_tweets) {
 
-		// Time zone offsets
-		$estTimezone = new DateTimeZone('America/New_York');
-		$gmtTimezone = new DateTimeZone('GMT');
-		$timestamp   = new DateTime($tweet['created_at'], $gmtTimezone);
-		$offset 		 = $estTimezone->getOffset($timestamp);
-		$processed_time = $timestamp->format('U') + $offset;
+			$tweet_text = $tweet['text'];
 
-		$tweets[] = array(
-			'text'      => $tweet_text
-		,	'timestamp' => $processed_time
-		);
+			// Add hyperlink html tags to any urls, twitter ids or hashtags in the tweet.
+			$tweet_text = preg_replace('/(\.\.\.+)/', '…', $tweet_text);
+			$tweet_text = preg_replace('/(https?:\/\/[^\s"<>…]+)/','<a href="$1">$1</a>', $tweet_text);
+			$tweet_text = preg_replace('/(^|[\n\s])@([^\s"<>…\t\n\r<:]*)/is', '$1<a href="http://twitter.com/$2">@$2</a>', $tweet_text);
+			$tweet_text = preg_replace('/(^|[\n\s])#([^\s"<>…\t\n\r<:]*)/is', '$1<a href="http://twitter.com/search?q=%23$2">#$2</a>', $tweet_text);
+
+			// Time zone offsets
+			$timestamp   = new DateTime($tweet['created_at']);
+			$offset = get_option('gmt_offset');
+			$processed_time = $timestamp->format('U') + ($offset*3600);
+			$datetime = new DateTime();
+			$datetime->setTimestamp($processed_time);
+
+			$tweets[] = array(
+				'text'      => $tweet_text
+			,	'timestamp' => $processed_time
+			);
+		}
+
+		$limit++;
+
 	}
 
 	return array_slice($tweets, 0, $tweet_count);
