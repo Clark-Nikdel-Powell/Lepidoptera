@@ -297,6 +297,10 @@ function LEPI_get_tweets($max_tweets, $twitter_id) {
 
 	require_once 'lib/twitter/tmhOAuth.php';
 
+	$access_code = get_option('tw_access_token_secret');
+
+	if ($access_code != '') {
+
 	$tmhOAuth = new tmhOAuth(array(
 	'consumer_key'    => get_option('tw_consumer_key'),
 	'consumer_secret' => get_option('tw_consumer_secret'),
@@ -316,8 +320,6 @@ function LEPI_get_tweets($max_tweets, $twitter_id) {
 	));
 
 	$transient_name = $twitter_id.'_twitter_search_results';
-
-//	delete_transient($transient_name);
 	$tweets_raw = get_transient($transient_name);
 
 	if ($tweets_raw === false) { //if there is no cached file
@@ -361,6 +363,8 @@ function LEPI_get_tweets($max_tweets, $twitter_id) {
 	}
 
 	return array_slice($tweets, 0, $tweet_count);
+
+	}
 
 } // LEPI_get_tweets()
 
