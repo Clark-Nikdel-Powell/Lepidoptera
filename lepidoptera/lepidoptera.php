@@ -369,7 +369,7 @@ function LEPI_get_tweets($max_tweets, $twitter_id) {
 
 } // LEPI_get_tweets()
 
-function open_graph() {
+function LEPI_open_graph() {
 	global $post;
 
 	$default_url = $_SERVER["REQUEST_URI"];
@@ -426,6 +426,6 @@ function open_graph() {
 	<meta name="twitter:description" property="og:description" content="<?= esc_attr($desc); ?>">
 	<link rel="apple-touch-icon" href="<?= WP_THEME_URL ?>/images/apple-touch-icon.png" />
 	<?
-}
+} // LEPI_open_graph()
 
 ?>
