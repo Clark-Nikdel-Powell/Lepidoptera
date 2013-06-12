@@ -311,7 +311,7 @@ function LEPI_get_tweets($max_tweets, $twitter_id) {
 	// Build the request. Full param list here: https://dev.twitter.com/docs/api/1.1/get/statuses/user_timeline
 	// Because retweets and replies are filtered out AFTER getting tweets, the default count is $max_tweets plus 20,
 	// (for good measure) and is pared down in the foreach() loop below.
-	$code    = $tmhOAuth->request('GET', $tmhOAuth->url('1/statuses/user_timeline'), array(
+	$code    = $tmhOAuth->request('GET', $tmhOAuth->url('1.1/statuses/user_timeline'), array(
 	  'screen_name' => $twitter_id,
 	  'count' => $max_tweets+20,
 	  'include_rts' => false,
@@ -321,6 +321,7 @@ function LEPI_get_tweets($max_tweets, $twitter_id) {
 
 	$transient_name = $twitter_id.'_twitter_search_results';
 	$tweets_raw = get_transient($transient_name);
+// delete_transient($transient_name);
 
 	if ($tweets_raw === false) { //if there is no cached file
 	  $tweets_raw = json_decode($tmhOAuth->response['response'], true);
@@ -342,11 +343,11 @@ function LEPI_get_tweets($max_tweets, $twitter_id) {
 			// Add hyperlink html tags to any urls, twitter ids or hashtags in the tweet.
 			$tweet_text = preg_replace('/(\.\.\.+)/', '…', $tweet_text);
 			$tweet_text = preg_replace('/(https?:\/\/[^\s"<>…]+)/','<a href="$1">$1</a>', $tweet_text);
-			$tweet_text = preg_replace('/(^|[\n\s])@([^\s"<>…\t\n\r<:]*)/is', '$1<a href="http://twitter.com/$2">@$2</a>', $tweet_text);
-			$tweet_text = preg_replace('/(^|[\n\s])#([^\s"<>…\t\n\r<:]*)/is', '$1<a href="http://twitter.com/search?q=%23$2">#$2</a>', $tweet_text);
+			$tweet_text = preg_replace('/(^|[\n\s])@([^\s"\t\n\r<:]*)/is', '$1<a href="http://twitter.com/$2">@$2</a>', $tweet_text);
+			$tweet_text = preg_replace('/(^|[\n\s])#([^\s"\t\n\r<:]*)/is', '$1<a href="http://twitter.com/search?q=%23$2">#$2</a>', $tweet_text);
 
 			// Time zone offsets
-			$timestamp   = new DateTime($tweet['created_at']);
+			$timestamp = new DateTime($tweet['created_at']);
 			$offset = get_option('gmt_offset');
 			$processed_time = $timestamp->format('U') + ($offset*3600);
 			$datetime = new DateTime();
@@ -367,5 +368,64 @@ function LEPI_get_tweets($max_tweets, $twitter_id) {
 	}
 
 } // LEPI_get_tweets()
+
+function open_graph() {
+	global $post;
+
+	$default_url = $_SERVER["REQUEST_URI"];
+	$default_title = get_bloginfo('name');
+	$default_desc = get_bloginfo('description');
+	$default_img = WP_THEME_URL.'/images/apple-touch-icon.png';
+
+	$url = is_singular()
+		? get_permalink($post->ID)
+		: $default_url;
+
+	$title = is_singular()
+		? $post->post_title.' | '.$default_title
+		: $default_title;
+
+	$desc = is_singular() && has_excerpt($post->ID)
+		? apply_filters('get_the_excerpt', $post->post_excerpt)
+		: $default_desc;
+
+	if (is_singular() && has_post_thumbnail($post->ID)) {
+
+
+		/* Set up an empty array for the links. */
+		$links = array();
+
+		/* Get the intermediate image sizes and add the full size to the array. */
+		$sizes = get_intermediate_image_sizes();
+		$sizes[] = 'full';
+
+		/* Loop through each of the image sizes. */
+		foreach ( $sizes as $size ) {
+
+			/* Get the image source, width, height, and whether it's intermediate. */
+			$image = wp_get_attachment_image_src( get_post_thumbnail_id($post->ID), $size );
+
+			if ( empty($img) && !empty($image) && $image[1] >= 200 && $image[2] >= 200 ) {
+				$img = $image[0];
+			}
+		}
+	}
+
+	$type = is_singular('post')
+		? 'article'
+		: 'website';
+
+	?>
+	<meta property="og:type" content="<?= $type; ?>">
+	<meta name="twitter:card"    content="summary">
+	<meta name="twitter:creator" content="@<?= get_option('twitter_handle') ?>">
+	<meta name="twitter:title" property="og:title" content="<?= esc_attr($title); ?>">
+	<meta name="twitter:url" property="og:url" content="<?= esc_attr($url); ?>">
+	<? if ($img) { ?><meta name="twitter:image" property="og:image" content="<?= esc_attr($img); ?>"><? } ?>
+	<? if (!$img) { ?><meta name="twitter:image" property="og:image" content="<?= esc_attr($default_img); ?>"><? } ?>
+	<meta name="twitter:description" property="og:description" content="<?= esc_attr($desc); ?>">
+	<link rel="apple-touch-icon" href="<?= WP_THEME_URL ?>/images/apple-touch-icon.png" />
+	<?
+}
 
 ?>
