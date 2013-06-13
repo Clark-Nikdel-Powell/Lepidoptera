@@ -372,7 +372,7 @@ function LEPI_get_tweets($max_tweets, $twitter_id) {
 function LEPI_open_graph() {
 	global $post;
 
-	$default_url = $_SERVER["REQUEST_URI"];
+	$default_url = get_bloginfo('url');
 	$default_title = get_bloginfo('name');
 	$default_desc = get_bloginfo('description');
 	$default_img = WP_THEME_URL.'/images/apple-touch-icon.png';
