@@ -369,17 +369,21 @@ function LEPI_get_tweets($max_tweets, $twitter_id) {
 
 } // LEPI_get_tweets()
 
-function LEPI_open_graph() {
+function LEPI_open_graph($args=0) {
 	global $post;
 
-	$default_url = get_bloginfo('url');
-	$default_title = get_bloginfo('name');
-	$default_desc = get_bloginfo('description');
-	$default_img = WP_THEME_URL.'/images/apple-touch-icon.png';
+	$defaults = array(
+		'url'        	=> get_bloginfo('url')
+	,	'title'        => get_bloginfo('name')
+	,	'desc'      	=> get_bloginfo('description')
+	,	'default_img' 	=> WP_THEME_URL.'/images/apple-touch-icon.png'
+	,	'custom_img'	=> false
+	);
+	$vars = wp_parse_args($args, $defaults);
 
 	$url = is_singular()
 		? get_permalink($post->ID)
-		: $default_url;
+		: $vars['url'];
 
 	$title = is_singular()
 		? $post->post_title.' | '.$default_title
@@ -387,7 +391,7 @@ function LEPI_open_graph() {
 
 	$desc = is_singular() && has_excerpt($post->ID)
 		? apply_filters('get_the_excerpt', $post->post_excerpt)
-		: $default_desc;
+		: $vars['title'];
 
 	if (is_singular() && has_post_thumbnail($post->ID)) {
 
@@ -409,6 +413,8 @@ function LEPI_open_graph() {
 				$img = $image[0];
 			}
 		}
+	} elseif (is_singular() && !has_post_thumbnail($post->ID) && isset($vars['custom_img'])) {
+		$img = $vars['custom_img'];
 	}
 
 	$type = is_singular('post')
@@ -422,7 +428,7 @@ function LEPI_open_graph() {
 	<meta name="twitter:title" property="og:title" content="<?= esc_attr($title); ?>">
 	<meta name="twitter:url" property="og:url" content="<?= esc_attr($url); ?>">
 	<? if ($img) { ?><meta name="twitter:image" property="og:image" content="<?= esc_attr($img); ?>"><? } ?>
-	<? if (!$img) { ?><meta name="twitter:image" property="og:image" content="<?= esc_attr($default_img); ?>"><? } ?>
+	<? if (!$img) { ?><meta name="twitter:image" property="og:image" content="<?= esc_attr($vars['default_img']); ?>"><? } ?>
 	<meta name="twitter:description" property="og:description" content="<?= esc_attr($desc); ?>">
 	<link rel="apple-touch-icon" href="<?= WP_THEME_URL ?>/images/apple-touch-icon.png" />
 	<?
