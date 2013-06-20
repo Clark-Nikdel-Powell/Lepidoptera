@@ -26,8 +26,8 @@ GNU General Public License for more details.
  *
 **/
 
-add_action('admin_init', 'social_info');
-function social_info() {
+add_action('admin_init', 'LEPI_social_info');
+function LEPI_social_info() {
 
 	// General Social Media Settings
 	add_settings_section( 'GENERAL_social', 'Social Media Info', 'GENERAL_social_callback', 'general' );
@@ -301,32 +301,33 @@ function LEPI_get_tweets($max_tweets, $twitter_id) {
 
 	if ($access_code != '') {
 
-	$tmhOAuth = new tmhOAuth(array(
-	'consumer_key'    => get_option('tw_consumer_key'),
-	'consumer_secret' => get_option('tw_consumer_secret'),
-	'user_token'      => get_option('tw_access_token'),
-	'user_secret'     => get_option('tw_access_token_secret')
-	));
-
-	// Build the request. Full param list here: https://dev.twitter.com/docs/api/1.1/get/statuses/user_timeline
-	// Because retweets and replies are filtered out AFTER getting tweets, the default count is $max_tweets plus 20,
-	// (for good measure) and is pared down in the foreach() loop below.
-	$code    = $tmhOAuth->request('GET', $tmhOAuth->url('1.1/statuses/user_timeline'), array(
-	  'screen_name' => $twitter_id,
-	  'count' => $max_tweets+20,
-	  'include_rts' => false,
-	  'include_entities' => false,
-	  'exclude_replies'	=> true
-	));
-
 	$transient_name = $twitter_id.'_twitter_search_results';
+//   delete_transient($transient_name);
 	$tweets_raw = get_transient($transient_name);
-// delete_transient($transient_name);
 
 	if ($tweets_raw === false) { //if there is no cached file
-	  $tweets_raw = json_decode($tmhOAuth->response['response'], true);
-	  set_transient($transient_name, $tweets_raw, 1 * HOUR_IN_SECONDS);
-	  $set_tweets = true;
+
+		$tmhOAuth = new tmhOAuth(array(
+		'consumer_key'    => get_option('tw_consumer_key'),
+		'consumer_secret' => get_option('tw_consumer_secret'),
+		'user_token'      => get_option('tw_access_token'),
+		'user_secret'     => get_option('tw_access_token_secret')
+		));
+
+		// Build the request. Full param list here: https://dev.twitter.com/docs/api/1.1/get/statuses/user_timeline
+		// Because retweets and replies are filtered out AFTER getting tweets, the default count is $max_tweets plus 20,
+		// (for good measure) and is pared down in the foreach() loop below.
+		$code    = $tmhOAuth->request('GET', $tmhOAuth->url('1.1/statuses/user_timeline'), array(
+		  'screen_name' => $twitter_id,
+		  'count' => $max_tweets+20,
+		  'include_rts' => false,
+		  'include_entities' => false,
+		  'exclude_replies'	=> true
+		));
+
+		$tweets_raw = json_decode($tmhOAuth->response['response'], true);
+		set_transient($transient_name, $tweets_raw, 1 * HOUR_IN_SECONDS);
+		$set_tweets = true;
 	}
 	if (isset($set_tweets)) { //parse the feed just once as it will be cached from now on
 	  $tweets_raw = json_decode($tmhOAuth->response['response'], true);
@@ -336,7 +337,7 @@ function LEPI_get_tweets($max_tweets, $twitter_id) {
 
 	foreach ($tweets_raw as $tweet) {
 
-		if ($limit < $max_tweets) {
+		if (($limit < $max_tweets) && $tweet['text']) {
 
 			$tweet_text = $tweet['text'];
 
@@ -386,8 +387,8 @@ function LEPI_open_graph($args=0) {
 		: $vars['url'];
 
 	$title = is_singular()
-		? $post->post_title.' | '.$default_title
-		: $default_title;
+		? $post->post_title.' | '.$vars['title']
+		: $vars['title'];
 
 	$desc = is_singular() && has_excerpt($post->ID)
 		? apply_filters('get_the_excerpt', $post->post_excerpt)
@@ -427,11 +428,9 @@ function LEPI_open_graph($args=0) {
 	<meta name="twitter:creator" content="@<?= get_option('twitter_handle') ?>">
 	<meta name="twitter:title" property="og:title" content="<?= esc_attr($title); ?>">
 	<meta name="twitter:url" property="og:url" content="<?= esc_attr($url); ?>">
-	<? if ($img) { ?><meta name="twitter:image" property="og:image" content="<?= esc_attr($img); ?>"><? } ?>
-	<? if (!$img) { ?><meta name="twitter:image" property="og:image" content="<?= esc_attr($vars['default_img']); ?>"><? } ?>
+	<?php if ($img) { ?><meta name="twitter:image" property="og:image" content="<?= esc_attr($img); ?>"><?php } ?>
+	<?php if (!$img) { ?><meta name="twitter:image" property="og:image" content="<?= esc_attr($vars['default_img']); ?>"><?php } ?>
 	<meta name="twitter:description" property="og:description" content="<?= esc_attr($desc); ?>">
 	<link rel="apple-touch-icon" href="<?= WP_THEME_URL ?>/images/apple-touch-icon.png" />
-	<?
+	<?php
 } // LEPI_open_graph()
-
-?>
