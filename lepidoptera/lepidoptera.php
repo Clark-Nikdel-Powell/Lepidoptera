@@ -239,13 +239,13 @@ function LEPI_get_gp_button($args=0) {
 	$vars = wp_parse_args($args, $defaults);
 
 	// build button div
-	$button = '<g:plusone size="'. $vars[ 'size' ] .'"></g:plusone>';
+	$button = '<g:plusone href="'. $vars['href'] .'" size="'. $vars[ 'size' ] .'"></g:plusone>';
 
 	// put sdk in the footer, return button
 	add_action('wp_footer', 'GP_SDK');
 	return $button;
 
-} // LEPI_get_fb_button()
+} // LEPI_get_gp_button()
 
 // displays button
 function LEPI_gp_button($args=0) {
