@@ -160,6 +160,64 @@ function LEPI_fb_button($args=0) {
 
 /** ===============================================================================
  *
+ * Facebook Like Box
+ *
+ * Arguments:
+ *   'href'        : URL to like
+ *   'send'        : 'true', 'false' : Send button
+ *   'layout'      : 'standard', 'button_count', 'box_count' : Standard is crap, button count is small, box count is big
+ *   'width'       : idk, this doesn't seem to do much..
+ *   'height'      : most unnecesary.
+ *   'show-faces'  : 'true', 'false' : Takes up too much space
+ *   'stream'      : show the stream. or not. just don't cross them.
+ *   'header' 		 : shows the Facebook header
+ *   'show_border' : do you want borders with that?
+ *   'colorscheme' : 'light', 'dark'
+ *   'force_wall'  : For places, specifies whether the stream contains posts from the Place's wall or just checkins from friends. Default value: false.
+ *
+**/
+
+// returns box
+function LEPI_get_fb_box($args=0) {
+
+	$defaults = array(
+		'href'        	=> get_option('facebook_url')
+	,	'width'       	=> 292
+	,	'height'       => ''
+	,	'show-faces'  	=> true
+	,	'stream'  		=> true
+	,	'header'  		=> false
+	,	'show_border'  => true
+	,	'colorscheme' 	=> 'light'
+	,	'force_wall'   => false
+	);
+	$vars = wp_parse_args($args, $defaults);
+
+	// build box div
+	$box = '<div class="fb-like-box" data-href="'.$vars['href'].'" data-width="'.$vars['width'].'" data-height="'.$vars['height'].'" ';
+	$box .= 'data-show-faces="'.$vars['show-faces'].'" data-stream="'.$vars['stream'].'" data-show-border="'.$vars['show_border'].'" data-colorscheme="'.$vars['colorscheme'].'" data-header="'.$vars['header'].'" data-force-wall="'.$vars['force_wall'].'" ';
+	$box .= '></div>'.PHP_EOL;
+
+	// put sdk in the footer IF IT HASN'T BEEN ADDED YET, return box
+	if (!did_action('FB_SDK')) {
+		add_action('wp_footer', 'FB_SDK');
+	}
+	return $box;
+
+
+
+} // LEPI_get_fb_button()
+
+// displays button
+function LEPI_fb_box($args=0) {
+
+	echo LEPI_get_fb_box($args);
+
+} // LEPI_fb_box()
+
+
+/** ===============================================================================
+ *
  * Google +1 Button
  *
  * Arguments:
@@ -335,40 +393,55 @@ function LEPI_get_tweets($max_tweets, $twitter_id) {
 
 	$limit = 0;
 
-	foreach ($tweets_raw as $tweet) {
+	if (isset($tweets_raw['error']) && $tweets_raw['error'] == 'Not authorized') {
+		 $tweets_raw['error_message'] = 'The '. $twitter_id .' account\'s tweets are protected and are not available for display. Unprotect the account in order to access the tweets.';
+		 return $tweets_raw;
+	} else {
 
-		if (($limit < $max_tweets) && $tweet['text']) {
+		foreach ($tweets_raw as $tweet) {
 
-			$tweet_text = $tweet['text'];
+			if (($limit < $max_tweets) && $tweet['text']) {
 
-			// Add hyperlink html tags to any urls, twitter ids or hashtags in the tweet.
-			$tweet_text = preg_replace('/(\.\.\.+)/', '…', $tweet_text);
-			$tweet_text = preg_replace('/(https?:\/\/[^\s"<>…]+)/','<a href="$1">$1</a>', $tweet_text);
-			$tweet_text = preg_replace('/(^|[\n\s])@([^\s"\t\n\r<:]*)/is', '$1<a href="http://twitter.com/$2">@$2</a>', $tweet_text);
-			$tweet_text = preg_replace('/(^|[\n\s])#([^\s"\t\n\r<:]*)/is', '$1<a href="http://twitter.com/search?q=%23$2">#$2</a>', $tweet_text);
+				$tweet_text = $tweet['text'];
 
-			// Time zone offsets
-			$timestamp = new DateTime($tweet['created_at']);
-			$offset = get_option('gmt_offset');
-			$processed_time = $timestamp->format('U') + ($offset*3600);
-			$datetime = new DateTime();
-			$datetime->setTimestamp($processed_time);
+				// Add hyperlink html tags to any urls, twitter ids or hashtags in the tweet.
+				$tweet_text = preg_replace('/(\.\.\.+)/', '…', $tweet_text);
+				$tweet_text = preg_replace('/(https?:\/\/[^\s"<>…]+)/','<a href="$1">$1</a>', $tweet_text);
+				$tweet_text = preg_replace('/(^|[\n\s])@([^\s"\t\n\r<:]*)/is', '$1<a href="http://twitter.com/$2">@$2</a>', $tweet_text);
+				$tweet_text = preg_replace('/(^|[\n\s])#([^\s"\t\n\r<:]*)/is', '$1<a href="http://twitter.com/search?q=%23$2">#$2</a>', $tweet_text);
 
-			$tweets[] = array(
-				'text'      => $tweet_text
-			,	'timestamp' => $processed_time
-			);
+				// Time zone offsets
+				$timestamp = new DateTime($tweet['created_at']);
+				$offset = get_option('gmt_offset');
+				$processed_time = $timestamp->format('U') + ($offset*3600);
+				$datetime = new DateTime();
+				$datetime->setTimestamp($processed_time);
+
+				$tweets[] = array(
+					'text'      => $tweet_text
+				,	'timestamp' => $processed_time
+				);
+			}
+
+			$limit++;
+
 		}
 
-		$limit++;
+		if (isset($tweets)) return array_slice($tweets, 0, $tweet_count);
 
-	}
-
-	return array_slice($tweets, 0, $tweet_count);
-
+		}
 	}
 
 } // LEPI_get_tweets()
+
+/** ===============================================================================
+ *
+ * Provides Open Graph information in the header for Facebook
+ *
+ * Most of the params are automatic
+ *
+ *
+**/
 
 function LEPI_open_graph($args=0) {
 	global $post;
