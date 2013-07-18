@@ -1,0 +1,61 @@
+// Compass Import
+@import 'compass/css3';
+
+// Colors
+$twitter:     hsl(196, 100, 46);
+$yelp:        hsl(8,   68,  47);
+$foursquare:  hsl(198, 70,  46);
+
+
+.api_settings {position:relative;}
+
+.switchbox {
+	margin: 1.5em 0 1em;
+
+	a {
+		margin: 0 0 0 .3em;
+		padding: 0.65em 1em 0.65em 2em;
+		display: inline-block;
+		background-position: 10% center;
+		background-repeat: no-repeat;
+		color: #FFF;
+		font-family: HelveticaNeue-Light, 'Helvetica Neue Light', 'Helvetica Neue', sans-serif;
+		font-size: 16px;
+		opacity: .5;
+		text-align: right;
+		text-decoration: none;
+
+		&:first-child {margin-left:0;}
+		&:hover  {opacity:.7;}
+		&.active {opacity: 1;}
+	}
+
+	.twitter_settings {
+		background-image: url("../images/icons/twitter/twitter-24.png");
+		background-color: $twitter;
+		padding-left: 2.1em;
+	}
+	.yelp_settings {
+		background-image: url("../images/icons/yelp/yelp-24.png");
+		background-position: 10% 45%;
+		background-color: $yelp;
+		padding-left: 1.9em;
+	}
+	.foursquare_settings {
+		background-color: $foursquare;
+	}
+}
+.settingsbox {
+	@include transition(all .1s ease-in);
+	display: none;
+
+	&.active {display: block;}
+
+	&.foursquare_settings {
+
+		.add_foursquare {
+			display: block;
+			font-weight: bold;
+		}
+	}
+}
