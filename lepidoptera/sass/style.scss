@@ -2,10 +2,19 @@
 @import 'compass/css3';
 
 // Colors
+$facebook:    hsl(221, 44,  41);
 $twitter:     hsl(196, 100, 46);
 $yelp:        hsl(8,   68,  47);
 $foursquare:  hsl(198, 70,  46);
 
+label {cursor: pointer;}
+
+.form-table.urls {
+	th {
+		width: 50px;
+		padding-right: 0;
+	}
+}
 
 .api_settings {position:relative;}
 
