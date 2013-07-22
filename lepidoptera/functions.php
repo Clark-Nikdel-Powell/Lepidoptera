@@ -225,6 +225,85 @@ function LEPI_gp_button($args=0) {
 
 } // LEPI_gp_button()
 
+/** ===============================================================================
+ *
+ * Foursquare Like Button
+ *
+ * Arguments:
+ *   'href'        : URL of Foursquare location
+ *   'format'      : Empty for regular, wide for expanded text
+
+ *
+**/
+
+// Pull in Foursquare Javascript SDK only once.
+function FSQ_SDK() { include_once( LEPI_PATH . 'lib/fsq-sdk.php'); }
+
+// Returns Foursquare Like button
+function LEPI_get_fsq_button($args=0) {
+
+	$defaults = array(
+		'href'	 => get_option('foursquare_url')
+	,	'format' => ''
+	);
+	$vars = wp_parse_args($args, $defaults);
+
+	// build the button
+	// data-fuid="360215"
+	$button = '<a href="'. $vars['href'] .'" class="fourSq-widget" data-type="like" data-variant="'. $vars['format'] .'">Like us on foursquare</a>';
+
+	// put sdk in the footer, return button
+	add_action('wp_footer', 'FSQ_SDK');
+	return $button;
+
+} // LEPI_get_fsq_button()
+
+// displays button
+function LEPI_fsq_button($args=0) {
+
+	echo LEPI_get_fsq_button($args);
+
+} // LEPI_fsq_button()
+
+/** ===============================================================================
+ *
+ * Pinterest Pin Button
+ *
+ * Arguments:
+ *   'url'         : URL of pin
+ *   'media'       : URL to image to pin
+ *   'description' : Text attached to pin
+ *   'pin-config'  : 'beside', 'above', 'none'
+ *
+**/
+
+// returns button
+function LEPI_get_pin_button($args=0) {
+	global $post;
+
+	$defaults = array(
+		'url'         => get_permalink($post->ID)
+	,	'media'       => wp_get_attachment_url(get_post_thumbnail_id($post->ID))
+	,	'description' => get_the_title($post->ID)
+	,	'pin-config'  => 'beside'
+	);
+	$vars = wp_parse_args($args, $defaults);
+
+	// build button div
+	$button = '<a href="//pinterest.com/pin/create/button/?url='.urlencode($vars['url']).'&media='.$vars['media'].'&description='.$vars['description'].'" data-pin-config="'.$vars['pin-config'].'" data-pin-do="buttonPin" ><img src="//assets.pinterest.com/images/pidgets/pin_it_button.png" /></a>'.PHP_EOL;
+
+	// put js in the footer, return button
+	wp_enqueue_script('pinterest', '//assets.pinterest.com/js/pinit.js', array(), false, true);
+	return $button;
+
+} // LEPI_get_pin_button()
+
+// displays button
+function LEPI_pin_button($args=0) {
+
+	echo LEPI_get_pin_button($args);
+
+} // LEPI_pin_button()
 
 /** ===============================================================================
  *
@@ -272,46 +351,6 @@ function LEPI_tw_button($args=0) {
 	echo LEPI_get_tw_button($args);
 
 } // LEPI_tw_button()
-
-/** ===============================================================================
- *
- * Pinterest Pin Button
- *
- * Arguments:
- *   'url'         : URL of pin
- *   'media'       : URL to image to pin
- *   'description' : Text attached to pin
- *   'pin-config'  : 'beside', 'above', 'none'
- *
-**/
-
-// returns button
-function LEPI_get_pin_button($args=0) {
-	global $post;
-
-	$defaults = array(
-		'url'         => get_permalink($post->ID)
-	,	'media'       => wp_get_attachment_url(get_post_thumbnail_id($post->ID))
-	,	'description' => get_the_title($post->ID)
-	,	'pin-config'  => 'beside'
-	);
-	$vars = wp_parse_args($args, $defaults);
-
-	// build button div
-	$button = '<a href="//pinterest.com/pin/create/button/?url='.urlencode($vars['url']).'&media='.$vars['media'].'&description='.$vars['description'].'" data-pin-config="'.$vars['pin-config'].'" data-pin-do="buttonPin" ><img src="//assets.pinterest.com/images/pidgets/pin_it_button.png" /></a>'.PHP_EOL;
-
-	// put js in the footer, return button
-	wp_enqueue_script('pinterest', '//assets.pinterest.com/js/pinit.js', array(), false, true);
-	return $button;
-
-} // LEPI_get_pin_button()
-
-// displays button
-function LEPI_pin_button($args=0) {
-
-	echo LEPI_get_pin_button($args);
-
-} // LEPI_pin_button()
 
 /** ===============================================================================
  *

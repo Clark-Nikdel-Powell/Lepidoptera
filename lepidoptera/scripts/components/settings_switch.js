@@ -4,7 +4,6 @@ var $ = jQuery;
 
 jQuery('.switchbox a').click(function(){
 
-	console.log(jQuery(this).attr('class'));
 	var network_class = jQuery(this).attr('class');
 
 	if (jQuery(this).hasClass('active')) {return false;}

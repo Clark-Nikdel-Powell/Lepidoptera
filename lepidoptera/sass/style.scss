@@ -3,16 +3,52 @@
 
 // Colors
 $facebook:    hsl(221, 44,  41);
+$googleplus:  hsl(7,   63,  52);
+$linkedin:    hsl(197, 100, 35);
+$youtube:     hsl(2,   64,  49);
+$vimeo:       hsl(202, 100, 63);
+$pinterest:   hsl(358, 73,  46);
+$flickr:      hsl(213, 100, 43);
+$podcast:     hsl(262, 46,  54);
+$rss:         hsl(31,  100, 50);
 $twitter:     hsl(196, 100, 46);
 $yelp:        hsl(8,   68,  47);
 $foursquare:  hsl(198, 70,  46);
 
-label {cursor: pointer;}
+.wrap {
+	label, button {cursor: pointer;}
+	button {
+		color: hsl(0, 0, 61);
+
+		&:hover  {color: hsl(0, 0, 30);}
+		&:active {color: hsl(0, 0, 0);}
+	}
+}
 
 .form-table.urls {
 	th {
-		width: 50px;
+		width: 20px;
 		padding-right: 0;
+
+		i {
+			-webkit-font-smoothing: antialiased;
+			font-size: 14px;
+
+			&.icon-facebook    {background-color: $facebook;}
+			&.icon-google-plus {background-color: $googleplus;}
+			&.icon-linkedin    {background-color: $linkedin;}
+			&.icon-youtube     {background-color: $youtube;}
+			&.icon-pinterest   {background-color: $pinterest;}
+			&.icon-flickr      {background-color: $flickr;}
+			&.icon-music       {background-color: $podcast;}
+			&.icon-rss         {background-color: $rss;}
+			&.icon-vimeo       {
+				background-color: $vimeo;
+				background-image: url("../images/icons/vimeo/vimeo-16.png");
+				background-position: center center;
+				background-repeat: no-repeat;
+			}
+		}
 	}
 }
 
@@ -51,12 +87,16 @@ label {cursor: pointer;}
 		padding-left: 1.9em;
 	}
 	.foursquare_settings {
+		background-image: url("../images/icons/foursquare/foursquare-24.png");
 		background-color: $foursquare;
+		padding-left: 2.45em;
 	}
 }
 .settingsbox {
 	@include transition(all .1s ease-in);
 	display: none;
+
+	th {width:120px;}
 
 	&.active {display: block;}
 
