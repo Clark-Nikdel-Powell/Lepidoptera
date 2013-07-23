@@ -16,7 +16,7 @@ function LEPI_open_graph($args=0) {
 		'url'        	=> get_bloginfo('url')
 	,	'title'        => get_bloginfo('name')
 	,	'desc'      	=> get_bloginfo('description')
-	,	'default_img' 	=> WP_THEME_URL.'/images/apple-touch-icon.png'
+	,	'default_img' 	=> get_bloginfo('template_url').'/images/apple-touch-icon.png'
 	,	'custom_img'	=> false
 	);
 	$vars = wp_parse_args($args, $defaults);
@@ -62,15 +62,15 @@ function LEPI_open_graph($args=0) {
 		: 'website';
 
 	?>
-	<meta property="og:type" content="<?= $type; ?>">
+	<meta property="og:type" content="<?php echo $type; ?>">
 	<meta name="twitter:card"    content="summary">
-	<meta name="twitter:creator" content="@<?= get_option('twitter_handle') ?>">
-	<meta name="twitter:title" property="og:title" content="<?= esc_attr($title); ?>">
-	<meta name="twitter:url" property="og:url" content="<?= esc_attr($url); ?>">
-	<?php if ($img) { ?><meta name="twitter:image" property="og:image" content="<?= esc_attr($img); ?>"><?php } ?>
-	<?php if (!$img) { ?><meta name="twitter:image" property="og:image" content="<?= esc_attr($vars['default_img']); ?>"><?php } ?>
-	<meta name="twitter:description" property="og:description" content="<?= esc_attr($desc); ?>">
-	<link rel="apple-touch-icon" href="<?= WP_THEME_URL ?>/images/apple-touch-icon.png" />
+	<meta name="twitter:creator" content="@<?php echo get_option('twitter_handle') ?>">
+	<meta name="twitter:title" property="og:title" content="<?php echo esc_attr($title); ?>">
+	<meta name="twitter:url" property="og:url" content="<?php echo esc_attr($url); ?>">
+	<?php if (isset($img)) { ?><meta name="twitter:image" property="og:image" content="<?php echo esc_attr($img); ?>"><?php } ?>
+	<?php if (!isset($img)) { ?><meta name="twitter:image" property="og:image" content="<?php echo esc_attr($vars['default_img']); ?>"><?php } ?>
+	<meta name="twitter:description" property="og:description" content="<?php echo esc_attr($desc); ?>">
+	<link rel="apple-touch-icon" href="<?php echo esc_attr($vars['default_img']); ?>" />
 	<?php
 } // LEPI_open_graph()
 
@@ -437,7 +437,7 @@ function LEPI_get_tweets($max_tweets, $twitter_id) {
 
 		}
 
-		if (isset($tweets)) return array_slice($tweets, 0, $tweet_count);
+		if (isset($tweets)) return array_slice($tweets, 0, $max_tweets);
 
 		}
 	}
