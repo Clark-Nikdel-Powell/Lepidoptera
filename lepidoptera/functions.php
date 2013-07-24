@@ -332,34 +332,20 @@ function LEPI_get_tw_button($args=0) {
 
 	$defaults = array(
 		'type'      => 'share'
-	,	'text'      => get_the_title($post->ID)
-	,	'url'       => get_permalink($post->ID)
-	,	'hashtags'  => ''
-	,	'via'       => get_option('twitter_handle')
-	,   'recommend' => ''
-	,	'count'     => 'horizontal'
-	,   'size'      => ''
-	,	'opt_out'   => true
+   ,	'text'      => get_the_title($post->ID)
+   ,	'url'       => get_permalink($post->ID)
+   ,	'hashtags'  => ''
+   ,	'via'       => get_option('twitter_handle')
+   ,  'show_sn'   => ''
+   ,  'recommend' => ''
+   ,	'count'     => 'horizontal'
+   ,  'size'      => ''
+   ,	'opt_out'   => true
 	);
 	$vars = wp_parse_args($args, $defaults);
 
-?>
-<a href="https://twitter.com/share" class="twitter-share-button" data-via="lauren_ned">Tweet</a>
-
-<a href="https://twitter.com/share" data-size="large" data-related="jhned" data-hashtags="blarg" data-dnt="true">Tweet</a>
-
-<a href="https://twitter.com/lauren_ned" class="twitter-follow-button" data-show-count="false" data-size="large" data-dnt="true">Follow @lauren_ned</a>
-<a href="https://twitter.com/lauren_ned" class="twitter-follow-button" data-show-count="false" data-size="large" data-show-screen-name="false" data-dnt="true">Follow @lauren_ned</a>
-
-<a href="https://twitter.com/intent/tweet?button_hashtag=TwitterStories" class="twitter-hashtag-button" data-related="lauren_ned">Tweet #TwitterStories</a>
-
-<a href="https://twitter.com/intent/tweet?screen_name=lauren_ned" class="twitter-mention-button" data-related="lauren_ned">Tweet to @lauren_ned</a>
-
-<?
-
-	// build button div
+	// Build button div
 	switch ($vars['type']) {
-
 		case 'share' :
 			$intent = 'https://twitter.com/share';
 			$action = 'Tweet';
@@ -369,23 +355,38 @@ function LEPI_get_tw_button($args=0) {
 			$action = 'Follow @'. $vars['via'];
 			break;
 		case 'hashtag' :
-			$intent = 'https://twitter.com/intent/tweet?button_hashtag='. $vars['hashtags'];
+			$intent = 'https://twitter.com/intent/tweet?button_hashtag='. $vars['hashtags'] .'&text=' . urlencode( $vars['text'] );
 			$action = 'Tweet #'. $vars['hashtags'];
 			break;
 		case 'mention' :
 			$intent = 'https://twitter.com/intent/tweet?screen_name='. $vars['via'];
-			$action = 'Tweet to @'. $vars['via']
+			$action = 'Tweet to @'. $vars['via'];
 			break;
 	}
 
 	$button = '<a href="'. $intent .'" class="twitter-'. $vars['type'] .'-button" data-text="'.$vars['text'].'"';
+
+	// General Settings
 	if ( $vars['url'] )                         { $button .= ' data-url="'.$vars['url'].'"'; }
 	if ( $vars['hashtags'] )                    { $button .= ' data-hashtags="'.$vars['hashtags'].'"'; }
 	if ( $vars['via'] )                         { $button .= ' data-via="'.$vars['via'].'" '; }
 	if ( $vars['recommend'] )                   { $button .= ' data-related="'.$vars['recommend'].'" '; }
-	if ( $vars['count'] != $defaults['count'] ) { $button .= ' data-count="'.$vars['count'].'"'; }
 	if ( $vars['size'] == 'large' )             { $button .= ' data-size="large"';}
 	if ( $vars['opt_out'] == true )             { $button .= ' data-dnt="true"'; }
+
+	// Second switch to selectively set a couple options
+	switch ($vars['type']) {
+		// Share buttons use a different count syntax
+		case 'share' :
+			if ( $vars['count'] != $defaults['count'] ) { $button .= ' data-count="'.$vars['count'].'"'; }
+			break;
+		// Follow buttons don't show count
+		case 'follow' :
+			$button .= ' data-show-count="false"';
+			break;
+	}
+
+	// Set the button's action to wrap up
 	$button .= '>'. $action .'</a>';
 
 	// put sdk in the footer, return button

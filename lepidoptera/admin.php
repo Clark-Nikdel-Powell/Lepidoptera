@@ -325,7 +325,6 @@ function LEPI_social_settings() {
 	<?php
 	$foursquare_locations = get_option('foursquare_url');
 	if ( $foursquare_locations === '' ) {$foursquare_locations = array(0 => '');}
-	print_r($foursquare_locations);
 	$numLocations = count($foursquare_locations);
 	$i = 0;
 
