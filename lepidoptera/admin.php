@@ -95,10 +95,13 @@ function LEPI_social_settings() {
 		update_option('yelp_token_secret',      $_POST['yelp_token_secret']);
 
 		//Update Foursquare Settings
-		foreach ($_POST['foursquare_url'] as $foursquare_location) {
-			if ($foursquare_location != '') {$foursquare_locations[] = $foursquare_location;}
+		if (count($_POST['foursquare_url']) > 1) {
+			foreach ($_POST['foursquare_url'] as $foursquare_location) {
+				if ($foursquare_location != '') {$foursquare_locations[] = $foursquare_location;}
+			}
+		} else {
+			$foursquare_locations = $_POST['foursquare_url'];
 		}
-		update_option('foursquare_url',	$foursquare_locations);
 
 		$message = '<div id="message" class="updated"><p>Social media settings updated.</p></div>';
 	}

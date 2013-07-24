@@ -72,6 +72,7 @@ function LEPI_open_graph($args=0) {
 	<meta name="twitter:description" property="og:description" content="<?php echo esc_attr($desc); ?>">
 	<link rel="apple-touch-icon" href="<?php echo esc_attr($vars['default_img']); ?>" />
 	<?php
+
 } // LEPI_open_graph()
 
 /** ===============================================================================
@@ -307,40 +308,88 @@ function LEPI_pin_button($args=0) {
 
 /** ===============================================================================
  *
- * Twitter Share Button
+ * Twitter Buttons
  *
  * Arguments:
- *   'text'     : text of tweet
- *   'url'      : URL to share
- *   'hashtags' : list of hashtags separated by commas
- *   'via'      : reference a twitter handle
- *   'count'    : 'none', 'horizontal', 'vertical'
+ *   'type'      : share, follow, hashtag, mention
+ *   'text'      : text of tweet
+ *   'url'       : URL to share
+ *   'hashtags'  : list of hashtags separated by commas
+ *   'via'       : reference a twitter handle
+ *   'recommend' : recommend another Twitter handle
+ *   'count'     : 'none', 'horizontal', 'vertical'
+ *   'size'      : can set to 'large' for bigger button
+ *   'opt_out'   : opt out of tailored suggestions from Twitter
  *
 **/
+
+// Pull in Twitter Javascript SDK only once.
+function TW_SDK() { include_once( LEPI_PATH . 'lib/tw-sdk.php'); }
 
 // returns button
 function LEPI_get_tw_button($args=0) {
 	global $post;
 
 	$defaults = array(
-		'text'     => get_the_title($post->ID)
-	,	'url'      => get_permalink($post->ID)
-	,	'hashtags' => ''
-	,	'via'      => get_option('twitter_handle')
-	,	'count'    => 'horizontal'
+		'type'      => 'share'
+	,	'text'      => get_the_title($post->ID)
+	,	'url'       => get_permalink($post->ID)
+	,	'hashtags'  => ''
+	,	'via'       => get_option('twitter_handle')
+	,   'recommend' => ''
+	,	'count'     => 'horizontal'
+	,   'size'      => ''
+	,	'opt_out'   => true
 	);
 	$vars = wp_parse_args($args, $defaults);
 
-	// build button div
-	$button = '<a href="https://twitter.com/share" class="twitter-share-button" data-text="'.$vars['text'].'"';
-	if ($vars['url']) { $button .= ' data-url="'.$vars['url'].'"'; }
-	if ($vars['hashtags']) { $button .= ' data-hashtags="'.$vars['hashtags'].'"'; }
-	if ($vars['via']) { $button .= ' data-via="'.$vars['via'].'" '; }
-	if ($vars['count'] != $defaults['count']) { $button .= ' data-count="'.$vars['count'].'"'; }
-	$button .= '>Tweet</a>';
-	$button .= '<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>'.PHP_EOL;
+?>
+<a href="https://twitter.com/share" class="twitter-share-button" data-via="lauren_ned">Tweet</a>
 
-	// return button
+<a href="https://twitter.com/share" data-size="large" data-related="jhned" data-hashtags="blarg" data-dnt="true">Tweet</a>
+
+<a href="https://twitter.com/lauren_ned" class="twitter-follow-button" data-show-count="false" data-size="large" data-dnt="true">Follow @lauren_ned</a>
+<a href="https://twitter.com/lauren_ned" class="twitter-follow-button" data-show-count="false" data-size="large" data-show-screen-name="false" data-dnt="true">Follow @lauren_ned</a>
+
+<a href="https://twitter.com/intent/tweet?button_hashtag=TwitterStories" class="twitter-hashtag-button" data-related="lauren_ned">Tweet #TwitterStories</a>
+
+<a href="https://twitter.com/intent/tweet?screen_name=lauren_ned" class="twitter-mention-button" data-related="lauren_ned">Tweet to @lauren_ned</a>
+
+<?
+
+	// build button div
+	switch ($vars['type']) {
+
+		case 'share' :
+			$intent = 'https://twitter.com/share';
+			$action = 'Tweet';
+			break;
+		case 'follow' :
+			$intent = 'https://twitter.com/'. $vars['via'];
+			$action = 'Follow @'. $vars['via'];
+			break;
+		case 'hashtag' :
+			$intent = 'https://twitter.com/intent/tweet?button_hashtag='. $vars['hashtags'];
+			$action = 'Tweet #'. $vars['hashtags'];
+			break;
+		case 'mention' :
+			$intent = 'https://twitter.com/intent/tweet?screen_name='. $vars['via'];
+			$action = 'Tweet to @'. $vars['via']
+			break;
+	}
+
+	$button = '<a href="'. $intent .'" class="twitter-'. $vars['type'] .'-button" data-text="'.$vars['text'].'"';
+	if ( $vars['url'] )                         { $button .= ' data-url="'.$vars['url'].'"'; }
+	if ( $vars['hashtags'] )                    { $button .= ' data-hashtags="'.$vars['hashtags'].'"'; }
+	if ( $vars['via'] )                         { $button .= ' data-via="'.$vars['via'].'" '; }
+	if ( $vars['recommend'] )                   { $button .= ' data-related="'.$vars['recommend'].'" '; }
+	if ( $vars['count'] != $defaults['count'] ) { $button .= ' data-count="'.$vars['count'].'"'; }
+	if ( $vars['size'] == 'large' )             { $button .= ' data-size="large"';}
+	if ( $vars['opt_out'] == true )             { $button .= ' data-dnt="true"'; }
+	$button .= '>'. $action .'</a>';
+
+	// put sdk in the footer, return button
+	add_action('wp_footer', 'TW_SDK');
 	return $button;
 
 } // LEPI_get_tw_button()
