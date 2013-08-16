@@ -259,12 +259,12 @@ function LEPI_social_settings() {
 <h2>API Settings</h2>
 
 <div class="switchbox">
-	<a href="#" class="twitter_settings">Twitter</a>
+	<a href="#" class="twitter_settings active">Twitter</a>
 	<a href="#" class="yelp_settings">Yelp!</a>
-	<a href="#" class="foursquare_settings active">Foursquare</a>
+	<a href="#" class="foursquare_settings">Foursquare</a>
 </div>
 
-<div class="twitter_settings settingsbox">
+<div class="twitter_settings settingsbox active">
 <table class="form-table">
 	<tr valign="top">
 		<th scope="row">Twitter Handle</th>
@@ -320,7 +320,7 @@ function LEPI_social_settings() {
 </table>
 </div><!-- yelp_settigns -->
 
-<div class="foursquare_settings settingsbox active">
+<div class="foursquare_settings settingsbox">
 <table class="form-table">
 	<?php
 	$foursquare_locations = get_option('foursquare_url');
