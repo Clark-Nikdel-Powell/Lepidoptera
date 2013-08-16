@@ -238,7 +238,7 @@ function LEPI_gp_button($args=0) {
 **/
 
 // Pull in Foursquare Javascript SDK only once.
-function FSQ_SDK() { include_once( LEPI_PATH . 'lib/fsq-sdk.php'); }
+function FSQ_SDK() { include_once( LEPI_path . 'lib/fsq-sdk.php'); }
 
 // Returns Foursquare Like button
 function LEPI_get_fsq_button($args=0) {
@@ -324,7 +324,7 @@ function LEPI_pin_button($args=0) {
 **/
 
 // Pull in Twitter Javascript SDK only once.
-function TW_SDK() { include_once( LEPI_PATH . 'lib/tw-sdk.php'); }
+function TW_SDK() { include_once( LEPI_path . 'lib/tw-sdk.php'); }
 
 // returns button
 function LEPI_get_tw_button($args=0) {
