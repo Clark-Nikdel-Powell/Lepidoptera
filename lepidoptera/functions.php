@@ -110,7 +110,7 @@ function LEPI_get_fb_button($args=0) {
 	$vars = wp_parse_args($args, $defaults);
 
 	// build button div
-	$button = '<div class="fb-like" data-href="'.urlencode($vars['href']).'" data-send="'.$vars['send'].'" data-width="'.$vars['width'].'" data-show-faces="'.$vars['show-faces'].'"';
+	$button = '<div class="fb-like" data-href="'.$vars['href'].'" data-send="'.$vars['send'].'" data-width="'.$vars['width'].'" data-show-faces="'.$vars['show-faces'].'"';
 	if ($vars['layout'] != 'standard') { $button .= ' data-layout="'.$vars['layout'].'"'; }
 	if ($vars['font'] != $defaults['font']) { $button .= ' data-font="'.$vars['font'].'"'; }
 	if ($vars['colorscheme'] != $defaults['colorscheme']) { $button .= ' data-colorscheme="'.$vars['colorscheme'].'"'; }
@@ -228,6 +228,51 @@ function LEPI_gp_button($args=0) {
 
 /** ===============================================================================
  *
+ * Linkedin Share Button
+ *
+ * Arguments:
+ *   'type'   : 'share', 'follow'
+ *   'href'   : URL to like
+ *   'count'  : 'right', 'top', 'none'
+ *
+**/
+
+// pull in linkedin javascript sdk only once
+function LI_SDK() { include_once( LEPI_path . 'lib/li-sdk.php' ); }
+
+// returns button
+function LEPI_get_li_button($args=0) {
+
+	$defaults = array(
+		'type'        => 'share'
+	,	'href'        => get_permalink($post->ID)
+	,	'count'       => 'right'
+	);
+	$vars = wp_parse_args($args, $defaults);
+
+	// if it's a follow button, use the Linkedin url
+	if ($vars['type'] == 'follow') { $vars['href'] = get_option('linkedin_url'); }
+
+	// build button div
+	$button = '<script type="IN/Share" data-url="'. $vars['href'] .'"';
+	if ($vars['count'] == 'right' || $vars['count'] == 'top') { $button .= 'data-counter="'. $vars['count'] .'" ></script>'; }
+	else { $button .= ' ></script>'; }
+
+	// put sdk in the footer, return button
+	add_action('wp_footer', 'LI_SDK');
+	return $button;
+
+} // LEPI_get_li_button()
+
+// displays button
+function LEPI_li_button($args=0) {
+
+	echo LEPI_get_li_button($args);
+
+} // LEPI_li_button()
+
+/** ===============================================================================
+ *
  * Foursquare Like Button
  *
  * Arguments:
@@ -244,7 +289,7 @@ function FSQ_SDK() { include_once( LEPI_path . 'lib/fsq-sdk.php'); }
 function LEPI_get_fsq_button($args=0) {
 
 	$defaults = array(
-		'href'	 => get_option('foursquare_url')
+		'href'	=> get_option('foursquare_url')
 	,	'format' => ''
 	);
 	$vars = wp_parse_args($args, $defaults);
