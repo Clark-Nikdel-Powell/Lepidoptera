@@ -525,6 +525,7 @@ function LEPI_get_tweets($max_tweets, $twitter_id) {
 				$tweets[] = array(
 					'text'      => $tweet_text
 				,	'timestamp' => $processed_time
+				, 'url'       => 'https://twitter.com/'.$twitter_id.'/status/'.$tweet['id_str']
 				);
 			}
 
@@ -550,61 +551,63 @@ function LEPI_get_tweets($max_tweets, $twitter_id) {
 
 function LEPI_get_yelps($args=0) {
 
-$defaults = array(
-	'yelp_business_slug'    	=> get_option('yelp_business_slug')
-,	'yelp_consumer_key'    	   => get_option('yelp_consumer_key')
-,	'yelp_consumer_secret'	   => get_option('yelp_consumer_secret')
-,	'yelp_access_token'			=> get_option('yelp_access_token')
-,	'yelp_token_secret'	      => get_option('yelp_token_secret')
-);
-$vars = wp_parse_args($args, $defaults);
+	$defaults = array(
+		'yelp_business_slug'    	=> get_option('yelp_business_slug')
+	,	'yelp_consumer_key'    	   => get_option('yelp_consumer_key')
+	,	'yelp_consumer_secret'	   => get_option('yelp_consumer_secret')
+	,	'yelp_access_token'			=> get_option('yelp_access_token')
+	,	'yelp_token_secret'	      => get_option('yelp_token_secret')
+	);
+	$vars = wp_parse_args($args, $defaults);
 
-$biz_slug = $vars['yelp_business_slug'];
+	$biz_slug = $vars['yelp_business_slug'];
 
-// Enter the path that the oauth library is in relation to the php file
-include_once ( LEPI_path . 'lib/OAuth.php' );
+	// Enter the path that the oauth library is in relation to the php file
+	include_once ( LEPI_path . 'lib/OAuth.php' );
 
-$unsigned_url = 'http://api.yelp.com/v2/business/'.$biz_slug;
+	$unsigned_url = 'http://api.yelp.com/v2/business/'.$biz_slug;
 
-// Set your keys here
-$consumer_key 		= $vars['yelp_consumer_key'];
-$consumer_secret 	= $vars['yelp_consumer_secret'];
-$token 				= $vars['yelp_access_token'];
-$token_secret 		= $vars['yelp_token_secret'];
+	// Set your keys here
+	$consumer_key 		= $vars['yelp_consumer_key'];
+	$consumer_secret 	= $vars['yelp_consumer_secret'];
+	$token 				= $vars['yelp_access_token'];
+	$token_secret 		= $vars['yelp_token_secret'];
 
-// Check the cache first
-$transient_name = $biz_slug.'_yelp_results';
-$cached_yelps = get_transient($transient_name);
+	// Check the cache first
+	$transient_name = $biz_slug.'_yelp_results';
+	$cached_yelps = get_transient($transient_name);
 
-// If there is no cache, go get the Yelps
-if ($cached_yelps === false) {
+	// If there is no cache, go get the Yelps
+	if ($cached_yelps === false) {
 
-// Configure OAuth configuration
-$token = new OAuthToken($token, $token_secret);
-$consumer = new OAuthConsumer($consumer_key, $consumer_secret);
-$signature_method = new OAuthSignatureMethod_HMAC_SHA1();
-$oauthrequest = OAuthRequest::from_consumer_and_token($consumer, $token, 'GET', $unsigned_url);
-$oauthrequest->sign_request($signature_method, $consumer, $token);
-$signed_url = $oauthrequest->to_url();
+		// Configure OAuth configuration
+		$token = new OAuthToken($token, $token_secret);
+		$consumer = new OAuthConsumer($consumer_key, $consumer_secret);
+		$signature_method = new OAuthSignatureMethod_HMAC_SHA1();
+		$oauthrequest = OAuthRequest::from_consumer_and_token($consumer, $token, 'GET', $unsigned_url);
+		$oauthrequest->sign_request($signature_method, $consumer, $token);
+		$signed_url = $oauthrequest->to_url();
 
-// Send Yelp API Call
-$ch = curl_init($signed_url);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_HEADER, 0);
-$data = curl_exec($ch); // Yelp response
-curl_close($ch);
+		// Send Yelp API Call
+		$ch = curl_init($signed_url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_HEADER, 0);
+		$data = curl_exec($ch); // Yelp response
+		curl_close($ch);
 
-// Handle Yelp response data
-$response = json_decode($data);
+		// Handle Yelp response data
+		$response = json_decode($data);
 
-$requested_yelps = (array) $response;
-set_transient($transient_name, $requested_yelps, 1 * HOUR_IN_SECONDS);
+		$requested_yelps = (array) $response;
+		set_transient($transient_name, $requested_yelps, 1 * HOUR_IN_SECONDS);
 
-// Return the data!
-return $requested_yelps;
+		// Return the data!
+		return $requested_yelps;
 
-} else {
-return $cached_yelps;
-}
+	} else {
 
-}
+		return $cached_yelps;
+
+	}
+
+} // LEPI_get_yelps()
