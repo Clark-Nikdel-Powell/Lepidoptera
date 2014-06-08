@@ -25,8 +25,7 @@ function LEPI_social_menu() {
 	//add_menu_page( $page_title, $menu_title, $capability, $menu_slug, $function, $icon_url, $position );
 	//add_submenu_page( $parent_slug, $page_title, $menu_title, $capability, $menu_slug, $function );
 	$slug = 'lepidoptera';
-	add_menu_page( 'Lepidoptera', 'Lepidoptera', 'activate_plugins', $slug );
-	add_submenu_page( $slug, 'Lepidoptera', 'Lepidoptera', 'activate_plugins', $slug, 'LEPI_social_settings' );
+	add_options_page( 'Lepidoptera', 'Lepidoptera', 'activate_plugins', $slug, 'LEPI_social_settings');
 }
 
 function LEPI_social_settings() {
