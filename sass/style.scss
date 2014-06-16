@@ -1,0 +1,117 @@
+// Compass Import
+@import 'compass/css3';
+
+// Colors
+$facebook:    hsl(221, 44,  41);
+$googleplus:  hsl(7,   63,  52);
+$linkedin:    hsl(197, 100, 35);
+$youtube:     hsl(2,   64,  49);
+$vimeo:       hsl(202, 100, 63);
+$pinterest:   hsl(358, 73,  46);
+$flickr:      hsl(213, 100, 43);
+$podcast:     hsl(262, 46,  54);
+$rss:         hsl(31,  100, 50);
+$twitter:     hsl(196, 100, 46);
+$yelp:        hsl(8,   68,  47);
+$foursquare:  hsl(198, 70,  46);
+$avvo:        hsl(211, 63,  30);
+
+.wrap {
+	label, button {cursor: pointer;}
+	button {
+		color: hsl(0, 0, 61);
+
+		&:hover  {color: hsl(0, 0, 30);}
+		&:active {color: hsl(0, 0, 0);}
+	}
+}
+
+.form-table.urls {
+	th {
+		width: 20px;
+		padding-right: 0;
+
+		i {
+			-webkit-font-smoothing: antialiased;
+			font-size: 14px;
+
+			&.icon-facebook    {background-color: $facebook;}
+			&.icon-google-plus {background-color: $googleplus;}
+			&.icon-linkedin    {background-color: $linkedin;}
+			&.icon-youtube     {background-color: $youtube;}
+			&.icon-pinterest   {background-color: $pinterest;}
+			&.icon-flickr      {background-color: $flickr;}
+			&.icon-music       {background-color: $podcast;}
+			&.icon-rss         {background-color: $rss;}
+			&.icon-vimeo       {
+				background-color: $vimeo;
+				background-image: url("../icons/vimeo/vimeo-16.png");
+				background-position: center center;
+				background-repeat: no-repeat;
+			}
+		}
+	}
+}
+
+.api_settings {position:relative;}
+
+.switchbox {
+	margin: 1.5em 0 1em;
+
+	a {
+		margin: 0 0 0 .3em;
+		padding: 0.65em 1em 0.65em 2em;
+		display: inline-block;
+		background-position: 10% center;
+		background-repeat: no-repeat;
+		color: #FFF;
+		font-family: HelveticaNeue-Light, 'Helvetica Neue Light', 'Helvetica Neue', sans-serif;
+		font-size: 16px;
+		opacity: .5;
+		text-align: right;
+		text-decoration: none;
+
+		&:first-child {margin-left:0;}
+		&:hover  {opacity:.7;}
+		&.active {opacity: 1;}
+	}
+
+	.twitter_settings {
+		background-image: url("../icons/twitter/twitter-24.png");
+		background-color: $twitter;
+		padding-left: 2.1em;
+	}
+	.yelp_settings {
+		background-image: url("../icons/yelp/yelp-24.png");
+		background-position: 10% 45%;
+		background-color: $yelp;
+		padding-left: 1.9em;
+	}
+	.foursquare_settings {
+		background-image: url("../icons/foursquare/foursquare-24.png");
+		background-color: $foursquare;
+		padding-left: 2.45em;
+	}
+	.avvo_settings {
+		background-image: url("../icons/avvo/avvo-16.png");
+		background-position: 18% 46%;
+		background-color: $avvo;
+		padding-left: 2.5em
+	}
+}
+.settingsbox {
+	@include transition(all .1s ease-in);
+	display: none;
+
+	th {width:120px;}
+
+	&.active {display: block;}
+
+	&.foursquare_settings {
+
+		.add_foursquare {
+			display: block;
+			font-weight: bold;
+		}
+	}
+}

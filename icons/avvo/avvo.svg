@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 14.0.0, SVG Export Plug-In  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" [
+	<!ENTITY ns_flows "http://ns.adobe.com/Flows/1.0/">
+]>
+<svg version="1.1"
+	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
+	 x="0px" y="0px" width="100px" height="100px" viewBox="0.125 0.1259766 100 100" enable-background="new 0.125 0.1259766 100 100"
+	 xml:space="preserve">
+<defs>
+</defs>
+<line display="none" fill="none" stroke="#A9CCDB" stroke-width="0.25" stroke-miterlimit="10" x1="0.1259766" y1="0.125" x2="100.125" y2="0.125"/>
+<line display="none" fill="none" stroke="#A9CCDB" stroke-width="0.25" stroke-miterlimit="10" x1="0.1259766" y1="10.125" x2="100.125" y2="10.125"/>
+<line display="none" fill="none" stroke="#A9CCDB" stroke-width="0.25" stroke-miterlimit="10" x1="0.1259766" y1="20.125" x2="100.125" y2="20.125"/>
+<line display="none" fill="none" stroke="#A9CCDB" stroke-width="0.25" stroke-miterlimit="10" x1="0.1259766" y1="30.125" x2="100.125" y2="30.125"/>
+<line display="none" fill="none" stroke="#A9CCDB" stroke-width="0.25" stroke-miterlimit="10" x1="0.1259766" y1="40.125" x2="100.125" y2="40.125"/>
+<line display="none" fill="none" stroke="#A9CCDB" stroke-width="0.25" stroke-miterlimit="10" x1="0.1259766" y1="50.125" x2="100.125" y2="50.125"/>
+<line display="none" fill="none" stroke="#A9CCDB" stroke-width="0.25" stroke-miterlimit="10" x1="0.1259766" y1="60.1240234" x2="100.125" y2="60.1240234"/>
+<line display="none" fill="none" stroke="#A9CCDB" stroke-width="0.25" stroke-miterlimit="10" x1="0.1259766" y1="70.1240234" x2="100.125" y2="70.1240234"/>
+<line display="none" fill="none" stroke="#FF0000" stroke-width="0.25" stroke-miterlimit="10" x1="0.1259766" y1="80.1259766" x2="100.125" y2="80.1259766"/>
+<line display="none" fill="none" stroke="#A9CCDB" stroke-width="0.25" stroke-miterlimit="10" x1="0.1259766" y1="90.1259766" x2="100.125" y2="90.1259766"/>
+<line display="none" fill="none" stroke="#A9CCDB" stroke-width="0.25" stroke-miterlimit="10" x1="0.125" y1="0.125" x2="0.125" y2="100.1259766"/>
+<line display="none" fill="none" stroke="#A9CCDB" stroke-width="0.25" stroke-miterlimit="10" x1="10.125" y1="0.125" x2="10.125" y2="100.1259766"/>
+<line display="none" fill="none" stroke="#A9CCDB" stroke-width="0.25" stroke-miterlimit="10" x1="20.1259766" y1="0.125" x2="20.1259766" y2="100.1259766"/>
+<line display="none" fill="none" stroke="#A9CCDB" stroke-width="0.25" stroke-miterlimit="10" x1="30.125" y1="0.125" x2="30.125" y2="100.1259766"/>
+<line display="none" fill="none" stroke="#A9CCDB" stroke-width="0.25" stroke-miterlimit="10" x1="40.125" y1="0.125" x2="40.125" y2="100.1259766"/>
+<line display="none" fill="none" stroke="#A9CCDB" stroke-width="0.25" stroke-miterlimit="10" x1="50.125" y1="0.125" x2="50.125" y2="100.1259766"/>
+<line display="none" fill="none" stroke="#A9CCDB" stroke-width="0.25" stroke-miterlimit="10" x1="60.125" y1="0.125" x2="60.125" y2="100.1259766"/>
+<line display="none" fill="none" stroke="#A9CCDB" stroke-width="0.25" stroke-miterlimit="10" x1="70.125" y1="0.125" x2="70.125" y2="100.1259766"/>
+<line display="none" fill="none" stroke="#A9CCDB" stroke-width="0.25" stroke-miterlimit="10" x1="80.125" y1="0.125" x2="80.125" y2="100.1259766"/>
+<line display="none" fill="none" stroke="#A9CCDB" stroke-width="0.25" stroke-miterlimit="10" x1="90.125" y1="0.125" x2="90.125" y2="100.1259766"/>
+<path fill="#050505" d="M0.125,7.7475586c28.1728516,2.8779297,56.3554688,5.6728516,84.5380859,8.5019531
+	c-7.4541016,4.4072266-14.3212891,9.7216797-20.8642578,15.3720703
+	c-7.9580078,6.8964844-15.4277344,14.3359375-22.6474609,21.9946289
+	C29.6118164,65.8935547,18.7978516,78.8564453,8.9169922,92.5048828c5.1972656-16.03125,8.8349609-33.0644531,6.5932617-49.9643555
+	C13.8984375,29.7602539,8.3334961,17.6323242,0.125,7.7475586L0.125,7.7475586z"/>
+<path fill="#050505" d="M52.3632812,67.9951172C65.7119141,52.9873047,78.96875,37.4838867,87.9589844,19.3774414
+	C92.0878906,34.7114258,96.0283203,50.090332,100.125,65.4287109c-5.6337891-3.2910156-12.0498047-5.3613281-18.6035156-5.4785156
+	C71.2480469,59.6611328,61.375,63.3818359,52.3632812,67.9951172L52.3632812,67.9951172z"/>
+</svg>
