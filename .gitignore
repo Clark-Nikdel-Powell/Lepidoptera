@@ -1,3 +1,5 @@
 *.sass-cache/
 *.scssc
 *.DS_Store
+
+/css/style.css
