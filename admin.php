@@ -9,14 +9,8 @@
 add_action('admin_head', 'LEPI_styles');
 
 function LEPI_styles() {
-	echo '<link href="'. plugins_url('/css/style.css' , __FILE__) .'" rel="stylesheet">';
-}
-
-add_action('admin_head', 'LEPI_icons');
-add_action('wp_head',    'LEPI_icons');
-
-function LEPI_icons() {
 	echo '<link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">';
+	echo '<link href="'. plugins_url('/css/style.css' , __FILE__) .'" rel="stylesheet">';
 }
 
 add_action( 'admin_enqueue_scripts', 'LEPI_scripts' );
@@ -28,12 +22,8 @@ function LEPI_scripts() {
 add_action('admin_menu', 'LEPI_social_menu');
 
 function LEPI_social_menu() {
-	//add_menu_page( $page_title, $menu_title, $capability, $menu_slug, $function, $icon_url, $position );
-	//add_submenu_page( $parent_slug, $page_title, $menu_title, $capability, $menu_slug, $function );
 	$slug = 'lepidoptera';
-	//add_menu_page( 'Lepidoptera', 'Lepidoptera', 'activate_plugins', $slug );
-	add_options_page( 'Lepidoptera', 'Lepidoptera', 'add_users', 'lepidoptera', 'LEPI_social_settings');
-//	add_submenu_page( $slug, 'Lepidoptera', 'Lepidoptera', 'activate_plugins', $slug, 'LEPI_social_settings' );
+	add_options_page( 'Lepidoptera', 'Lepidoptera', 'activate_plugins', $slug, 'LEPI_social_settings');
 }
 
 function LEPI_social_settings() {
@@ -92,7 +82,7 @@ function LEPI_social_settings() {
 		update_option('rss_url',       $_POST['rss_url']);
 		update_option('podcast_url',   $_POST['podcast_url']);
 
-		// Update Twitter Settings
+		//Update Twitter Settings
 		update_option('twitter_handle',         $_POST['twitter_handle']);
 		update_option('tw_consumer_key',        $_POST['tw_consumer_key']);
 		update_option('tw_consumer_secret',     $_POST['tw_consumer_secret']);
@@ -106,7 +96,7 @@ function LEPI_social_settings() {
 		update_option('yelp_access_token',      $_POST['yelp_access_token']);
 		update_option('yelp_token_secret',      $_POST['yelp_token_secret']);
 
-		// Update Foursquare Settings
+		//Update Foursquare Settings
 		if (count($_POST['foursquare_url']) > 1) {
 			foreach ($_POST['foursquare_url'] as $foursquare_location) {
 				if ($foursquare_location != '') {$foursquare_locations[] = $foursquare_location;}
@@ -134,6 +124,7 @@ function LEPI_social_settings() {
 		delete_transient(get_option('yelp_business_slug').'_yelp_results');
 		$message = '<div id="message" class="updated"><p>Yelp cache for '. get_option('yelp_business_slug') .' deleted.</p></div>';
 	}
+
 
 	if ( isset($_POST['delete_avvo_cache']) ) {
 		delete_transient(get_option('avvo_lawyerid').'_avvo_results');

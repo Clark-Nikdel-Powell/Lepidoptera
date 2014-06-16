@@ -16,7 +16,7 @@ function LEPI_open_graph($args=0) {
 		'url'        	=> get_bloginfo('url')
 	,	'title'        => get_bloginfo('name')
 	,	'desc'      	=> get_bloginfo('description')
-	,	'default_img' 	=> get_bloginfo('template_url').'/images/apple-touch-icon.jpg'
+	,	'default_img' 	=> get_bloginfo('template_url').'/images/apple-touch-icon.png'
 	,	'custom_img'	=> false
 	);
 	$vars = wp_parse_args($args, $defaults);
@@ -49,10 +49,10 @@ function LEPI_open_graph($args=0) {
 			$image = wp_get_attachment_image_src( get_post_thumbnail_id($post->ID), $size );
 
 			if ( empty($img) && !empty($image) && $image[1] >= 200 && $image[2] >= 200 ) {
-				$img = $image;
+				$img = $image[0];
 			}
 		}
-	} elseif (is_singular() && !has_post_thumbnail($post->ID) && ($vars['custom_img'] != false) ) {
+	} elseif (is_singular() && !has_post_thumbnail($post->ID) && isset($vars['custom_img'])) {
 		$img = $vars['custom_img'];
 	}
 
@@ -66,17 +66,8 @@ function LEPI_open_graph($args=0) {
 	<meta name="twitter:creator" content="@<?php echo get_option('twitter_handle') ?>">
 	<meta name="twitter:title" property="og:title" content="<?php echo esc_attr($title); ?>">
 	<meta name="twitter:url" property="og:url" content="<?php echo esc_attr($url); ?>">
-	<?php if (isset($img)) { ?>
-		<!-- <? print($img); ?> -->
-		<meta name="twitter:image" property="og:image" content="<?php echo esc_attr($img[0]); ?>">
-		<meta property="og:image:width" content="<?php echo $img[1]; ?>" />
-		<meta property="og:image:height" content="<?php echo $img[2]; ?>" />
-	<?php } ?>
-	<?php if (!isset($img)) { ?>
-		<meta name="twitter:image" property="og:image" content="<?php echo esc_attr($vars['default_img']); ?>">
-		<meta property="og:image:width" content="1280" />
-		<meta property="og:image:height" content="1280" />
-	<?php } ?>
+	<?php if (isset($img)) { ?><meta name="twitter:image" property="og:image" content="<?php echo esc_attr($img); ?>"><?php } ?>
+	<?php if (!isset($img)) { ?><meta name="twitter:image" property="og:image" content="<?php echo esc_attr($vars['default_img']); ?>"><?php } ?>
 	<meta name="twitter:description" property="og:description" content="<?php echo esc_attr($desc); ?>">
 	<link rel="apple-touch-icon" href="<?php echo esc_attr($vars['default_img']); ?>" />
 	<?php
@@ -184,8 +175,6 @@ function LEPI_get_fb_box($args=0) {
 	}
 	return $box;
 
-
-
 } // LEPI_get_fb_box()
 
 // displays button
@@ -194,6 +183,7 @@ function LEPI_fb_box($args=0) {
 	echo LEPI_get_fb_box($args);
 
 } // LEPI_fb_box()
+
 
 /** ===============================================================================
  *
@@ -238,7 +228,6 @@ function LEPI_fb_comments($args=0) {
 	echo LEPI_get_fb_comments($args);
 
 } // LEPI_fb_comments()
-
 
 /** ===============================================================================
  *
@@ -577,6 +566,7 @@ function LEPI_get_tweets($max_tweets, $twitter_id) {
 				$tweets[] = array(
 					'text'      => $tweet_text
 				,	'timestamp' => $processed_time
+				, 	'url'       => 'https://twitter.com/'.$twitter_id.'/status/'.$tweet['id_str']
 				);
 			}
 
@@ -601,6 +591,7 @@ function LEPI_get_tweets($max_tweets, $twitter_id) {
 **/
 
 function LEPI_get_yelps($args=0) {
+
 
 $defaults = array(
 	'yelp_business_slug'    	=> get_option('yelp_business_slug')
