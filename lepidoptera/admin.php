@@ -1,5 +1,6 @@
 <?php
 
+
 /** ===============================================================================
  *
  * Social Media Settings
@@ -27,6 +28,7 @@ $LEPI_settings = array(
 ,	'tw_consumer_secret' 		=> array()
 ,	'tw_access_token' 			=> array()
 ,	'tw_access_token_secret' 	=> array()
+,	'tw_cache_expiration'		=> array()
 ,	'yelp_business_slug' 		=> array()
 ,	'yelp_consumer_key' 		=> array()
 ,	'yelp_consumer_secret'		=> array()
@@ -46,6 +48,7 @@ function LEPI_styles() {
 }
 
 function LEPI_register() {
+	global $LEPI_settings;
 	foreach ( $LEPI_settings as $setting => $options ) {
 		register_setting( 'LEPI', $setting ); 
 	}
@@ -110,13 +113,14 @@ function LEPI_update_options() {
 
 	/* set status message */
 	$message = '';
+	global $LEPI_settings;
 
 	/* Update/Delete Functions */
 	if ( isset($_POST['submit']) ) {
 
 		foreach ( $LEPI_settings as $setting => $options ) {
 			if ( !isset($options['auto']) || $options['auto'] !== FALSE ) {
-				update_option( $setting,  $_POST[$setting] );
+				$upd = update_option( $setting,  $_POST[$setting] );
 			}
 		}
 
@@ -358,6 +362,10 @@ function LEPI_social_settings() {
 	<tr valign="top">
 		<th scope="row">Access Token Secret</th>
 		<td><input type="text" id="tw_access_token_secret" name="tw_access_token_secret" value="<?php echo get_option('tw_access_token_secret'); ?>" style="width:70%" /></td>
+	</tr>
+	<tr valign="top">
+		<th scope="row">Cache Expiration</th>
+		<td><input type="number" id="tw_cache_expiration" name="tw_cache_expiration" value="<?php echo get_option('tw_cache_expiration'); ?>" style="width:10%;" /> minutes</td>
 	</tr>
 	<?php
 

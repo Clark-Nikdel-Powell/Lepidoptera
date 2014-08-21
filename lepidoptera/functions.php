@@ -536,7 +536,7 @@ function LEPI_get_tweets($max_tweets = 5, $twitter_id = FALSE) {
 			,	'succeeded'	=> array()
 			,	'tweets'	=> array()
 			);
-			$max_request =  round(($max_tweets + 20) / count($handles));
+			$max_request =  round(($max_tweets + 20) / count($handles)) + 2;
 			foreach ($handles as $handle) {
 				$code  = $tmhOAuth->request('GET', $tmhOAuth->url('1.1/statuses/user_timeline'), array(
 					'screen_name' => $handle
@@ -562,11 +562,15 @@ function LEPI_get_tweets($max_tweets = 5, $twitter_id = FALSE) {
 			if ( count($tweets_arr['tweets']) > 0) {
 				usort( $tweets_arr['tweets'], function($a, $b) {
 					$k = 'created_at';
-					return strnatcmp($a[$k], $b[$k]);
+					return (strtotime($a[$k]) < strtotime($b[$k])) ? 1 : -1;
 				});
 			}
 
-			set_transient($transient_name, $tweets_arr, 1 * HOUR_IN_SECONDS);
+			$stored_timeout = get_option('tw_cache_expiration');
+			if ( is_numeric($stored_timeout) ) { $timeout = round( ( $stored_timeout * 60 ) ); }
+			else { $timeout = 600; }
+
+			set_transient($transient_name, $tweets_arr, $timeout);
 			$set_tweets = true;
 		}
 		if (isset($set_tweets)) { //parse the feed just once as it will be cached from now on
