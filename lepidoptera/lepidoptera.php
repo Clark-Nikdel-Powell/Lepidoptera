@@ -5,9 +5,9 @@ Plugin URI: http://clarknikdelpowell.com/plugins/lepidoptera
 Description: Social media tools and functions.
 Author: Josh Nederveld
 Author URI: http://clarknikdelpowell.com
-Version: 0.1
+Version: 2.0
 
-Copyright 2013  Josh Nederveld  (email : joshn@clarknikdelpowell.com)
+Copyright 2014  Josh Nederveld & Samuel Mello  (email : josh@clarknikdelpowell.com)
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

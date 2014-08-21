@@ -6,134 +6,184 @@
  *
 **/
 
-add_action('admin_head', 'LEPI_styles');
+add_action( 'admin_head', 'LEPI_styles' );
+add_action( 'admin_init', 'LEPI_register' );
+add_action( 'admin_menu', 'LEPI_social_menu' );
+add_action( 'admin_enqueue_scripts', 'LEPI_scripts' );
+
+
+$LEPI_settings = array(
+	'facebook_url' 				=> array()
+,	'gplus_url' 				=> array()
+,	'linkedin_url' 				=> array()
+,	'youtube_url' 				=> array()
+,	'vimeo_url'	 				=> array()
+,	'flickr_url' 				=> array()
+,	'pinterest_url' 			=> array()
+,	'rss_url' 					=> array()
+,	'podcast_url'	 			=> array()
+,	'twitter_handles' 			=> array( 'auto' => FALSE )
+,	'tw_consumer_key' 			=> array()
+,	'tw_consumer_secret' 		=> array()
+,	'tw_access_token' 			=> array()
+,	'tw_access_token_secret' 	=> array()
+,	'yelp_business_slug' 		=> array()
+,	'yelp_consumer_key' 		=> array()
+,	'yelp_consumer_secret'		=> array()
+,	'yelp_access_token' 		=> array()
+,	'yelp_token_secret' 		=> array()
+,	'foursquare_url' 			=> array( 'auto' => FALSE )
+,	'avvo_username' 			=> array()
+,	'avvo_api_key'				=> array()
+,	'avvo_lawyerid'				=> array()
+);
+$LEPI_slug = 'lepidoptera';
+$LEPI_transient = 'twitter_search_results';
 
 function LEPI_styles() {
 	echo '<link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">';
 	echo '<link href="'. plugins_url('/css/style.css' , __FILE__) .'" rel="stylesheet">';
 }
 
-add_action( 'admin_enqueue_scripts', 'LEPI_scripts' );
+function LEPI_register() {
+	foreach ( $LEPI_settings as $setting => $options ) {
+		register_setting( 'LEPI', $setting ); 
+	}
+}
+
+function LEPI_get_handles( $key, $single = FALSE ) { 
+	$handles = get_option($key);
+	if ( $handles_decoded = json_decode($handles) ) { $handles = $handles_decoded;}
+	if ( is_array($handles) && count($handles) > 0 ) {
+		if ( $single === TRUE ) { $return = $handles[0]; }
+		else { $return = $handles; }
+	}
+	elseif ( is_string($handles) ) { 
+		if ($single === TRUE ) { $return = $handles; }
+		else { $return = array( $handles ); }
+	}
+	else { $return = FALSE;}
+	return $return;
+}
+
 
 function LEPI_scripts() {
 	wp_enqueue_script('Lepidoptera Scripts', plugins_url('/scripts/lepidoptera.min.js' , __FILE__) );
 }
 
-add_action('admin_menu', 'LEPI_social_menu');
 
 function LEPI_social_menu() {
-	$slug = 'lepidoptera';
-	add_options_page( 'Lepidoptera', 'Lepidoptera', 'activate_plugins', $slug, 'LEPI_social_settings');
+	global $LEPI_slug;
+	add_options_page( 'Lepidoptera', 'Lepidoptera', 'activate_plugins', $LEPI_slug, 'LEPI_social_settings');
 }
 
-function LEPI_social_settings() {
-	$slug = 'lepidoptera';
+function LEPI_get_trans() {
+	global $LEPI_transient;
+	global $wpdb;
+	$return = array();
+	$caches = $wpdb->get_results("SELECT * FROM " . $wpdb->options . " WHERE option_name LIKE '%\_transient\_timeout\_%" . $LEPI_transient . "'", ARRAY_A);
+	if ( count($caches) > 0 ) {
+		foreach ( $caches as $cache ) {
 
-	// General Social Networks Settings
-	add_option('facebook_url');
-	add_option('gplus_url');
-	add_option('linkedin_url');
+			$name_pre = $cache['option_name'];
+			$key = preg_replace('/_transient_timeout_/i', '', $name_pre);
+			$name = preg_replace('/(_|)' . $LEPI_transient . '/i', '', $key);
 
-	// Video Social Networks
-	add_option('youtube_url');
-	add_option('vimeo_url');
+			if ( strlen($name) == 0 ) {
+				$name = 'All Handles';
+			}
 
-	// Photo Social Networks
-	add_option('flickr_url');
-	add_option('pinterest_url');
+			$return[] = array(
+				'key' => $key
+			,	'name' => $name
+			,	'expires' => date('m/d/Y g:i a', $cache['option_value'])
+			);
+		}
+	}
+	else { 
+		$return = FALSE;
+	}
+	return $return;
+}
 
-	// RSS
-	add_option('rss_url');
-	add_option('podcast_url');
+function LEPI_update_options() {
 
-	// Twitter Settings
-	add_option('twitter_handle');
-	add_option('tw_consumer_key');
-	add_option('tw_consumer_secret');
-	add_option('tw_access_token');
-	add_option('tw_access_token_secret');
+	/* set status message */
+	$message = '';
 
-	// Yelp Settings
-	add_option('yelp_business_slug');
-	add_option('yelp_consumer_key');
-	add_option('yelp_consumer_secret');
-	add_option('yelp_access_token');
-	add_option('yelp_token_secret');
-
-	// Foursquare Settings
-	add_option('foursquare_url');
-
-	// Avvo Settings
-	add_option('avvo_username');
-	add_option('avvo_api_key');
-	add_option('avvo_lawyerid');
-
-	// Update/Delete Functions
+	/* Update/Delete Functions */
 	if ( isset($_POST['submit']) ) {
 
-		// Update General Settings
-		update_option('facebook_url',  $_POST['facebook_url']);
-		update_option('gplus_url',     $_POST['gplus_url']);
-		update_option('linkedin_url',  $_POST['linkedin_url']);
-		update_option('youtube_url',   $_POST['youtube_url']);
-		update_option('vimeo_url',     $_POST['vimeo_url']);
-		update_option('flickr_url',    $_POST['flickr_url']);
-		update_option('pinterest_url', $_POST['pinterest_url']);
-		update_option('rss_url',       $_POST['rss_url']);
-		update_option('podcast_url',   $_POST['podcast_url']);
-
-		//Update Twitter Settings
-		update_option('twitter_handle',         $_POST['twitter_handle']);
-		update_option('tw_consumer_key',        $_POST['tw_consumer_key']);
-		update_option('tw_consumer_secret',     $_POST['tw_consumer_secret']);
-		update_option('tw_access_token',        $_POST['tw_access_token']);
-		update_option('tw_access_token_secret', $_POST['tw_access_token_secret']);
-
-		// Update Yelp Settings
-		update_option('yelp_business_slug',     $_POST['yelp_business_slug']);
-		update_option('yelp_consumer_key',      $_POST['yelp_consumer_key']);
-		update_option('yelp_consumer_secret',   $_POST['yelp_consumer_secret']);
-		update_option('yelp_access_token',      $_POST['yelp_access_token']);
-		update_option('yelp_token_secret',      $_POST['yelp_token_secret']);
-
-		//Update Foursquare Settings
-		if (count($_POST['foursquare_url']) > 1) {
-			foreach ($_POST['foursquare_url'] as $foursquare_location) {
-				if ($foursquare_location != '') {$foursquare_locations[] = $foursquare_location;}
+		foreach ( $LEPI_settings as $setting => $options ) {
+			if ( !isset($options['auto']) || $options['auto'] !== FALSE ) {
+				update_option( $setting,  $_POST[$setting] );
 			}
-		} else {
-			$foursquare_locations = $_POST['foursquare_url'];
 		}
 
-		// Update Avvo Settings
-		update_option('avvo_username',   $_POST['avvo_username']);
-		update_option('avvo_api_key',    $_POST['avvo_api_key']);
-		update_option('avvo_lawyerid',   $_POST['avvo_lawyerid']);
+		/* Update Foursquare Settings Manually */
+		$foursquare_key = 'foursquare_url';
+		if ( count($_POST[$foursquare_key]) > 1 ) {
+			foreach ( $_POST[$foursquare_key] as $foursquare_location ) {
+				if ( $foursquare_location != '' ) { $foursquare_locations[] = $foursquare_location; }
+			}
+		}
+		else {
+			$foursquare_locations = $_POST[$foursquare_key];
+		}
 
-		$message = '<div id="message" class="updated"><p>Social media settings updated.</p></div>';
+		/* update twitter handles manually */
+		$handles_key = 'twitter_handles';
+		if ( isset($_POST[$handles_key]) && count($_POST[$handles_key]) > 0 ) {
+			$handlesupd = array();
+			foreach ( $_POST[$handles_key] as $handle ) {
+				if ( is_string($handle) && strlen($handle) > 0 && !in_array( trim($handle), $handlesupd ) ) { 
+					$handlesupd[] = trim($handle);
+				}
+			}
+			if ( count($handlesupd) > 0 ) {
+				$handlesupdJSON = json_encode($handlesupd);
+				update_option( $handles_key, $handlesupdJSON );
+			}
+		}
+
+		$message .= '<div id="message" class="updated"><p>Social media settings updated.</p></div>';
 	}
 
 	if ( isset($_POST['delete_twitter_cache']) ) {
-		// Problem: if they're using more than one Twitter handle, how do we make sure that all transients are deleted, not just the one that's set?
-		// Solution: make the Twitter handle a select box (if there's more than one handle) with the ability to add more. Authentication information switches out based on which handle you have selected.
-		delete_transient(get_option('twitter_handle').'_twitter_search_results');
-		$message = '<div id="message" class="updated"><p>Twitter cache for '. get_option('twitter_handle') .' deleted.</p></div>';
+		$transients = LEPI_get_trans();
+		if ($transients) {
+			foreach ($transients as $transient) {
+				delete_transient($transient['key']);
+			}
+		}
+		
+		$message .= '<div id="message" class="updated"><p>Twitter cache deleted.</p></div>';
 	}
 
 	if ( isset($_POST['delete_yelp_cache']) ) {
 		delete_transient(get_option('yelp_business_slug').'_yelp_results');
-		$message = '<div id="message" class="updated"><p>Yelp cache for '. get_option('yelp_business_slug') .' deleted.</p></div>';
+		$message .= '<div id="message" class="updated"><p>Yelp cache for '. get_option('yelp_business_slug') .' deleted.</p></div>';
 	}
-
 
 	if ( isset($_POST['delete_avvo_cache']) ) {
 		delete_transient(get_option('avvo_lawyerid').'_avvo_results');
-		$message = '<div id="message" class="updated"><p>Avvo cache for '. get_option('avvo_lawyerid') .' deleted.</p></div>';
+		$message .= '<div id="message" class="updated"><p>Avvo cache for '. get_option('avvo_lawyerid') .' deleted.</p></div>';
 	}
+
+	return $message;
+
+}
+
+function LEPI_social_settings() {
+
+	global $LEPI_slug;
+
+	/* call update options function */
+	$message = LEPI_update_options();
 
 ?>
 <div class="wrap">
-<form method="post" action="<?php echo $_SERVER['PHP_SELF'].'?page='.$slug; ?>">
+<form method="post" action="<?php echo $_SERVER['PHP_SELF'].'?page='.$LEPI_slug; ?>">
 <h2>Lepidoptera</h2>
 <?php (isset($message) ? $message : ''); ?>
 
@@ -279,10 +329,19 @@ function LEPI_social_settings() {
 </div>
 
 <div class="twitter_settings settingsbox active">
+<div class="handle_template"><?php echo LEPI_load_twitter_template() ?></div>
 <table class="form-table">
 	<tr valign="top">
 		<th scope="row">Twitter Handle</th>
-		<td><input type="text" id="twitter_handle" name="twitter_handle" value="<?php echo get_option('twitter_handle'); ?>" style="width:70%" /><p class="description">Just the handle, not the URL</p></td>
+		<td>
+		
+		<div class="handle_add handle_cell">
+			<i class="dashicons dashicons-plus"></i>
+		</div>
+		<div class="handle_container handle_cell"><?php echo LEPI_load_handles(); ?></div>
+		<p class="description">Just the handle, not the URL</p>
+
+		</td>
 	</tr>
 	<tr valign="top">
 		<th scope="row">Consumer Key</th>
@@ -300,9 +359,35 @@ function LEPI_social_settings() {
 		<th scope="row">Access Token Secret</th>
 		<td><input type="text" id="tw_access_token_secret" name="tw_access_token_secret" value="<?php echo get_option('tw_access_token_secret'); ?>" style="width:70%" /></td>
 	</tr>
+	<?php
+
+	$transients = LEPI_get_trans();
+	if ($transients) { ?>
+
 	<tr>
-		<td colspan="2"><? submit_button('Delete Twitter Cache', 'delete_twitter', 'delete_twitter_cache', false); ?></td>
+		<td colspan="2"><? submit_button('Delete Twitter Cache', 'delete_twitter', 'delete_twitter_cache', false);  ?></td>
 	</tr>
+	<tr>
+		<td colspan="2">
+		<table class="trans-table">
+		<tr>
+			<td class="trans-header">Name</td>
+			<td class="trans-header">Expires</td>
+		</tr>
+
+		<?php foreach ($transients as $transient) { ?>
+
+		<tr>
+			<td class="trans-data"><?php echo $transient['name'] ?></td>
+			<td class="trans-data"><?php echo $transient['expires'] ?></td>
+		</tr>
+
+		<?php } ?>
+
+		</table>
+		</td>
+	</tr>
+	<?php } ?>
 </table>
 </div><!-- twitter_settings -->
 
@@ -342,7 +427,7 @@ function LEPI_social_settings() {
 	$numLocations = count($foursquare_locations);
 	$i = 0;
 
-	foreach ($foursquare_locations as $pointer => $foursquare_location) { ?>
+	foreach ( $foursquare_locations as $pointer => $foursquare_location ) { ?>
 	<tr valign="top">
 		<th scope="row">
 			<?php if ( $pointer == 0 ) { ?>Foursquare URL<?php } ?>
@@ -381,3 +466,40 @@ function LEPI_social_settings() {
 </div><!-- wrap -->
 <?php
 } // social_settings()
+
+function LEPI_load_twitter_template($val='',$id='') {
+
+	ob_start();
+	?>
+	<div class="handle_wrapper handle_row">
+		<input class="handle_cell handle_input" type="text" id="twitter_handles_<?php echo $id ?>" name="twitter_handles[]" value="<?php echo $val ?>" autocomplete="off" />
+		<div class="dashicons dashicons-minus handle_remove handle_cell"></div>
+	</div>
+	<?php
+	return ob_get_clean();
+}
+
+function LEPI_load_handles() {
+	$handles = LEPI_get_handles('twitter_handles');
+	$h_html = '';
+	if ( is_array($handles) ) {
+		if ( count($handles) > 0 ) {
+			foreach ( $handles as $id => $handle ) {
+				if ( strlen($handle) && $handle != '' ) {
+					$h_html .= LEPI_load_twitter_template($handle,$id);
+				}
+			}
+		}
+		else {
+			$h_html .= LEPI_load_twitter_template(null,0);
+		}
+	}
+	elseif ($handles) {
+		$h_html = LEPI_load_twitter_template($handles,0);
+	}
+	else {
+		$h_html .= LEPI_load_twitter_template(null,0);
+	}
+
+	return $h_html;
+}
