@@ -1,6 +1,6 @@
 {
 "CodeKitInfo": "This is a CodeKit 2.x project configuration file. It is designed to sync project settings across multiple machines. MODIFYING THE CONTENTS OF THIS FILE IS A POOR LIFE DECISION. If you do so, you will likely cause CodeKit to crash. This file is not useful unless accompanied by the project that created it in CodeKit 2. This file is not backwards-compatible with CodeKit 1.x. For more information, see: http:\/\/incident57.com\/codekit",
-"creatorBuild": "17580",
+"creatorBuild": "17682",
 "files": {
 	"\/admin.php": {
 		"fileType": 8192,
@@ -17,6 +17,15 @@
 		"ignoreWasSetByUser": 0,
 		"inputAbbreviatedPath": "\/config.rb",
 		"outputAbbreviatedPath": "\/config.rb",
+		"outputPathIsOutsideProject": 0,
+		"outputPathIsSetByUser": 0
+		},
+	"\/css\/style.css": {
+		"fileType": 16,
+		"ignore": 1,
+		"ignoreWasSetByUser": 0,
+		"inputAbbreviatedPath": "\/css\/style.css",
+		"outputAbbreviatedPath": "No Output Path",
 		"outputPathIsOutsideProject": 0,
 		"outputPathIsSetByUser": 0
 		},
@@ -545,23 +554,45 @@
 		"outputStyle": 1,
 		"syntaxCheckerStyle": 1
 		},
-	"\/scripts\/lepidoptera.js": {
+	"\/scripts\/components\/twitter_handles.js": {
 		"fileType": 64,
-		"ignore": 0,
+		"ignore": 1,
 		"ignoreWasSetByUser": 0,
-		"inputAbbreviatedPath": "\/scripts\/lepidoptera.js",
-		"outputAbbreviatedPath": "\/scripts\/min\/lepidoptera-ck.js",
+		"inputAbbreviatedPath": "\/scripts\/components\/twitter_handles.js",
+		"outputAbbreviatedPath": "\/scripts\/components\/min\/twitter_handles-min.js",
 		"outputPathIsOutsideProject": 0,
 		"outputPathIsSetByUser": 0,
 		"outputStyle": 1,
 		"syntaxCheckerStyle": 1
 		},
-	"\/scripts\/lepidoptera.min.js": {
+	"\/scripts\/lepidoptera.js": {
 		"fileType": 64,
 		"ignore": 0,
 		"ignoreWasSetByUser": 0,
+		"inputAbbreviatedPath": "\/scripts\/lepidoptera.js",
+		"outputAbbreviatedPath": "\/scripts\/lepidoptera.min.js",
+		"outputPathIsOutsideProject": 0,
+		"outputPathIsSetByUser": 1,
+		"outputStyle": 1,
+		"syntaxCheckerStyle": 1
+		},
+	"\/scripts\/lepidoptera.min.js": {
+		"fileType": 64,
+		"ignore": 1,
+		"ignoreWasSetByUser": 0,
 		"inputAbbreviatedPath": "\/scripts\/lepidoptera.min.js",
 		"outputAbbreviatedPath": "\/scripts\/min\/lepidoptera.min-ck.js",
+		"outputPathIsOutsideProject": 0,
+		"outputPathIsSetByUser": 0,
+		"outputStyle": 1,
+		"syntaxCheckerStyle": 1
+		},
+	"\/scripts\/min\/lepidoptera-ck.js": {
+		"fileType": 64,
+		"ignore": 1,
+		"ignoreWasSetByUser": 0,
+		"inputAbbreviatedPath": "\/scripts\/min\/lepidoptera-ck.js",
+		"outputAbbreviatedPath": "\/scripts\/min\/min\/lepidoptera-ck-min.js",
 		"outputPathIsOutsideProject": 0,
 		"outputPathIsSetByUser": 0,
 		"outputStyle": 1,
@@ -570,7 +601,7 @@
 	},
 "hooks": [
 	],
-"lastSavedByUser": "Glenn Welser",
+"lastSavedByUser": "Samuel Mello",
 "manualImportLinks": {
 	},
 "projectAttributes": {

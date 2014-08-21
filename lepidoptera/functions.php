@@ -14,10 +14,11 @@ function LEPI_open_graph($args=0) {
 
 	$defaults = array(
 		'url'        	=> get_bloginfo('url')
-	,	'title'        => get_bloginfo('name')
+	,	'title'         => get_bloginfo('name')
 	,	'desc'      	=> get_bloginfo('description')
 	,	'default_img' 	=> get_bloginfo('template_url').'/images/apple-touch-icon.png'
 	,	'custom_img'	=> false
+	,	'handle'		=> LEPI_get_handles('twitter_handles', TRUE)
 	);
 	$vars = wp_parse_args($args, $defaults);
 
@@ -63,7 +64,7 @@ function LEPI_open_graph($args=0) {
 	?>
 	<meta property="og:type" content="<?php echo $type; ?>">
 	<meta name="twitter:card"    content="summary">
-	<meta name="twitter:creator" content="@<?php echo get_option('twitter_handle') ?>">
+	<meta name="twitter:creator" content="@<?php echo $vars['handle'] ?>">
 	<meta name="twitter:title" property="og:title" content="<?php echo esc_attr($title); ?>">
 	<meta name="twitter:url" property="og:url" content="<?php echo esc_attr($url); ?>">
 	<?php if (isset($img)) { ?><meta name="twitter:image" property="og:image" content="<?php echo esc_attr($img); ?>"><?php } ?>
@@ -417,16 +418,16 @@ function LEPI_get_tw_button($args=0) {
 	global $post;
 
 	$defaults = array(
-		'type'      => 'share'
-   ,	'text'      => get_the_title($post->ID)
-   ,	'url'       => get_permalink($post->ID)
-   ,	'hashtags'  => ''
-   ,	'via'       => get_option('twitter_handle')
-   ,  'show_sn'   => ''
-   ,  'recommend' => ''
-   ,	'count'     => 'horizontal'
-   ,  'size'      => ''
-   ,	'opt_out'   => true
+		'type'		=> 'share'
+	,	'text'		=> get_the_title($post->ID)
+	,	'url'		=> get_permalink($post->ID)
+	,	'hashtags'	=> ''
+	,	'via'		=> LEPI_get_handles('twitter_handles', TRUE)
+	,	'show_sn'	=> ''
+	,	'recommend'	=> ''
+	,	'count'		=> 'horizontal'
+	,	'size'		=> ''
+	,	'opt_out'	=> true
 	);
 	$vars = wp_parse_args($args, $defaults);
 
@@ -497,85 +498,128 @@ function LEPI_tw_button($args=0) {
  *
 **/
 
-function LEPI_get_tweets($max_tweets, $twitter_id) {
+function LEPI_get_tweets($max_tweets = 5, $twitter_id = FALSE) {
 
 	include_once( LEPI_path . 'lib/twitter/tmhOAuth.php' );
 
 	$access_code = get_option('tw_access_token_secret');
-
 	if ($access_code != '') {
 
-	$transient_name = $twitter_id.'_twitter_search_results';
-//   delete_transient($transient_name);
-	$tweets_raw = get_transient($transient_name);
+		global $LEPI_transient;
+		$transient_name = $LEPI_transient;
+		
+		if ( $twitter_id !== FALSE ) {
+			$transient_name .= '_'.$twitter_id;
+		}
+		$tweets_raw = get_transient($transient_name);
+		if ( $tweets_raw === false ) {
 
-	if ($tweets_raw === false) { //if there is no cached file
+			$tmhOAuth = new tmhOAuth(array(
+				'consumer_key'    => get_option('tw_consumer_key')
+			,	'consumer_secret' => get_option('tw_consumer_secret')
+			,	'user_token'      => get_option('tw_access_token')
+			,	'user_secret'     => get_option('tw_access_token_secret')
+			));
 
-		$tmhOAuth = new tmhOAuth(array(
-		'consumer_key'    => get_option('tw_consumer_key'),
-		'consumer_secret' => get_option('tw_consumer_secret'),
-		'user_token'      => get_option('tw_access_token'),
-		'user_secret'     => get_option('tw_access_token_secret')
-		));
-
-		// Build the request. Full param list here: https://dev.twitter.com/docs/api/1.1/get/statuses/user_timeline
-		// Because retweets and replies are filtered out AFTER getting tweets, the default count is $max_tweets plus 20,
-		// (for good measure) and is pared down in the foreach() loop below.
-		$code    = $tmhOAuth->request('GET', $tmhOAuth->url('1.1/statuses/user_timeline'), array(
-		  'screen_name' => $twitter_id,
-		  'count' => $max_tweets+20,
-		  'include_rts' => false,
-		  'include_entities' => false,
-		  'exclude_replies'	=> true
-		));
-
-		$tweets_raw = json_decode($tmhOAuth->response['response'], true);
-		set_transient($transient_name, $tweets_raw, 1 * HOUR_IN_SECONDS);
-		$set_tweets = true;
-	}
-	if (isset($set_tweets)) { //parse the feed just once as it will be cached from now on
-	  $tweets_raw = json_decode($tmhOAuth->response['response'], true);
-	}
-
-	$limit = 0;
-
-	if (isset($tweets_raw['error']) && $tweets_raw['error'] == 'Not authorized') {
-		 $tweets_raw['error_message'] = 'The '. $twitter_id .' account\'s tweets are protected and are not available for display. Unprotect the account in order to access the tweets.';
-		 return $tweets_raw;
-	} else {
-
-		foreach ($tweets_raw as $tweet) {
-
-			if (($limit < $max_tweets) && $tweet['text']) {
-
-				$tweet_text = $tweet['text'];
-
-				// Add hyperlink html tags to any urls, twitter ids or hashtags in the tweet.
-				$tweet_text = preg_replace('/(\.\.\.+)/', 'É', $tweet_text);
-				$tweet_text = preg_replace('/(https?:\/\/[^\s"<>É]+)/','<a href="$1">$1</a>', $tweet_text);
-				$tweet_text = preg_replace('/(^|[\n\s])@([^\s"\t\n\r<:]*)/is', '$1<a href="http://twitter.com/$2">@$2</a>', $tweet_text);
-				$tweet_text = preg_replace('/(^|[\n\s])#([^\s"\t\n\r<:]*)/is', '$1<a href="http://twitter.com/search?q=%23$2">#$2</a>', $tweet_text);
-
-				// Time zone offsets
-				$timestamp = new DateTime($tweet['created_at']);
-				$offset = get_option('gmt_offset');
-				$processed_time = $timestamp->format('U') + ($offset*3600);
-				$datetime = new DateTime();
-				$datetime->setTimestamp($processed_time);
-
-				$tweets[] = array(
-					'text'      => $tweet_text
-				,	'timestamp' => $processed_time
-				, 	'url'       => 'https://twitter.com/'.$twitter_id.'/status/'.$tweet['id_str']
-				);
+			if ($twitter_id===FALSE) { 	
+				$handles = get_option('twitter_handles');
+				if (is_string($handles) && $json = json_decode($handles)) {
+					$handles = $json;
+				}
+			}
+			else { 
+				$handles = array($twitter_id);
 			}
 
-			$limit++;
+			$tweets_arr = array(
+				'failed' 	=> array()
+			,	'succeeded'	=> array()
+			,	'tweets'	=> array()
+			);
+			$max_request =  round(($max_tweets + 20) / count($handles)) + 2;
+			foreach ($handles as $handle) {
+				$code  = $tmhOAuth->request('GET', $tmhOAuth->url('1.1/statuses/user_timeline'), array(
+					'screen_name' => $handle
+				,	'count' => $max_request
+				,	'include_rts' => false
+				,	'include_entities' => false
+				,	'exclude_replies'	=> true
+				));
 
+				$tweets_raw = json_decode($tmhOAuth->response['response'], true);
+				if ( !isset($tweets_raw['errors']) ) {
+					foreach ($tweets_raw as &$tweet) {
+						$tweet['handle'] = $handle;
+						$tweets_arr['tweets'][] = $tweet;
+					}
+					$tweets_arr['succeeded'][] = $handle;
+				}
+				elseif ( isset($tweets_raw['errors']) ) {
+					$tweets_arr['failed'][$handle] = $tweets_raw['errors'];
+				}
+			}
+
+			if ( count($tweets_arr['tweets']) > 0) {
+				usort( $tweets_arr['tweets'], function($a, $b) {
+					$k = 'created_at';
+					return (strtotime($a[$k]) < strtotime($b[$k])) ? 1 : -1;
+				});
+			}
+
+			$stored_timeout = get_option('tw_cache_expiration');
+			if ( is_numeric($stored_timeout) ) { $timeout = round( ( $stored_timeout * 60 ) ); }
+			else { $timeout = 600; }
+
+			set_transient($transient_name, $tweets_arr, $timeout);
+			$set_tweets = true;
+		}
+		if (isset($set_tweets)) { //parse the feed just once as it will be cached from now on
+			$tweets_raw = $tweets_arr;
 		}
 
-		if (isset($tweets)) return array_slice($tweets, 0, $max_tweets);
+		$limit = 0;
 
+		if ( count($tweets_raw['tweets']) === 0 && count($tweets_raw['failed']) > 0 ){
+			 $tweets_raw['error'] .= 'There was an error getting tweets. The following accounts caused errors:<br/><br/>';
+			 foreach ($tweets_raw['failed'] as $handle) {
+			 	$tweets_raw['error'] .= $handle.'<br/>';
+			 }
+			 return $tweets_raw;
+		}
+		else {
+
+			foreach ( $tweets_raw['tweets'] as $tweet ) {
+
+				if ( count($tweets) <= $max_tweets  && $tweet['text'] ) {
+
+					$tweet_text = $tweet['text'];
+
+					// Add hyperlink html tags to any urls, twitter ids or hashtags in the tweet.
+					$tweet_text = preg_replace('/(\.\.\.+)/', 'É', $tweet_text);
+					$tweet_text = preg_replace('/(https?:\/\/[^\s"<>É]+)/','<a href="$1">$1</a>', $tweet_text);
+					$tweet_text = preg_replace('/(^|[\n\s])@([^\s"\t\n\r<:]*)/is', '$1<a href="http://twitter.com/$2">@$2</a>', $tweet_text);
+					$tweet_text = preg_replace('/(^|[\n\s])#([^\s"\t\n\r<:]*)/is', '$1<a href="http://twitter.com/search?q=%23$2">#$2</a>', $tweet_text);
+
+					// Time zone offsets
+					$timestamp = new DateTime($tweet['created_at']);
+					$offset = get_option('gmt_offset');
+					$processed_time = $timestamp->format('U') + ($offset*3600);
+					$datetime = new DateTime();
+					$datetime->setTimestamp($processed_time);
+
+					$tweets[] = array(
+						'text'     		=> $tweet_text
+					,	'timestamp' 	=> $processed_time
+					, 	'url'       	=> 'https://twitter.com/'.$tweet['handle'].'/status/'.$tweet['id_str']
+					,	'handle'		=> $tweet['handle']
+					,	'profile_img'	=> preg_replace('/^http(s|):/','',$tweet['user']['profile_image_url'])
+					);
+				}
+				$limit++;
+			}
+			if ( isset($tweets) ) {
+				return array_slice($tweets, 0, $max_tweets);
+			}
 		}
 	}
 
@@ -593,63 +637,62 @@ function LEPI_get_tweets($max_tweets, $twitter_id) {
 function LEPI_get_yelps($args=0) {
 
 
-$defaults = array(
-	'yelp_business_slug'    	=> get_option('yelp_business_slug')
-,	'yelp_consumer_key'    	   => get_option('yelp_consumer_key')
-,	'yelp_consumer_secret'	   => get_option('yelp_consumer_secret')
-,	'yelp_access_token'			=> get_option('yelp_access_token')
-,	'yelp_token_secret'	      => get_option('yelp_token_secret')
-);
-$vars = wp_parse_args($args, $defaults);
+	$defaults = array(
+		'yelp_business_slug'	=> get_option('yelp_business_slug')
+	,	'yelp_consumer_key'		=> get_option('yelp_consumer_key')
+	,	'yelp_consumer_secret'	=> get_option('yelp_consumer_secret')
+	,	'yelp_access_token'		=> get_option('yelp_access_token')
+	,	'yelp_token_secret'		=> get_option('yelp_token_secret')
+	);
+	$vars = wp_parse_args($args, $defaults);
 
-$biz_slug = $vars['yelp_business_slug'];
+	$biz_slug = $vars['yelp_business_slug'];
 
-// Enter the path that the oauth library is in relation to the php file
-include_once ( LEPI_path . 'lib/OAuth.php' );
+	// Enter the path that the oauth library is in relation to the php file
+	include_once ( LEPI_path . 'lib/OAuth.php' );
 
-$unsigned_url = 'http://api.yelp.com/v2/business/'.$biz_slug;
+	$unsigned_url = 'http://api.yelp.com/v2/business/'.$biz_slug;
 
-// Set your keys here
-$consumer_key 		= $vars['yelp_consumer_key'];
-$consumer_secret 	= $vars['yelp_consumer_secret'];
-$token 				= $vars['yelp_access_token'];
-$token_secret 		= $vars['yelp_token_secret'];
+	// Set your keys here
+	$consumer_key 		= $vars['yelp_consumer_key'];
+	$consumer_secret 	= $vars['yelp_consumer_secret'];
+	$token 				= $vars['yelp_access_token'];
+	$token_secret 		= $vars['yelp_token_secret'];
 
-// Check the cache first
-$transient_name = $biz_slug.'_yelp_results';
-$cached_yelps = get_transient($transient_name);
+	// Check the cache first
+	$transient_name = $biz_slug.'_yelp_results';
+	$cached_yelps = get_transient($transient_name);
 
-// If there is no cache, go get the Yelps
-if ($cached_yelps === false) {
+	// If there is no cache, go get the Yelps
+	if ($cached_yelps === false) {
 
-// Configure OAuth configuration
-$token = new OAuthToken($token, $token_secret);
-$consumer = new OAuthConsumer($consumer_key, $consumer_secret);
-$signature_method = new OAuthSignatureMethod_HMAC_SHA1();
-$oauthrequest = OAuthRequest::from_consumer_and_token($consumer, $token, 'GET', $unsigned_url);
-$oauthrequest->sign_request($signature_method, $consumer, $token);
-$signed_url = $oauthrequest->to_url();
+		// Configure OAuth configuration
+		$token = new OAuthToken($token, $token_secret);
+		$consumer = new OAuthConsumer($consumer_key, $consumer_secret);
+		$signature_method = new OAuthSignatureMethod_HMAC_SHA1();
+		$oauthrequest = OAuthRequest::from_consumer_and_token($consumer, $token, 'GET', $unsigned_url);
+		$oauthrequest->sign_request($signature_method, $consumer, $token);
+		$signed_url = $oauthrequest->to_url();
 
-// Send Yelp API Call
-$ch = curl_init($signed_url);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_HEADER, 0);
-$data = curl_exec($ch); // Yelp response
-curl_close($ch);
+		// Send Yelp API Call
+		$ch = curl_init($signed_url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_HEADER, 0);
+		$data = curl_exec($ch); // Yelp response
+		curl_close($ch);
 
-// Handle Yelp response data
-$response = json_decode($data);
+		// Handle Yelp response data
+		$response = json_decode($data);
 
-$requested_yelps = (array) $response;
-set_transient($transient_name, $requested_yelps, 1 * HOUR_IN_SECONDS);
+		$requested_yelps = (array) $response;
+		set_transient($transient_name, $requested_yelps, 1 * HOUR_IN_SECONDS);
 
-// Return the data!
-return $requested_yelps;
-
-} else {
-return $cached_yelps;
-}
-
+		// Return the data!
+		return $requested_yelps;
+	} 
+	else {
+		return $cached_yelps;
+	}
 }
 
 /** ===============================================================================
@@ -663,35 +706,35 @@ return $cached_yelps;
 
 function LEPI_get_avvo_reviews($args=0) {
 
-$defaults = array(
-	'avvo_username'  => get_option('avvo_username')
-,	'avvo_api_key'   => get_option('avvo_api_key')
-,	'avvo_lawyerid'  => get_option('avvo_lawyerid')
-);
-$vars = wp_parse_args($args, $defaults);
+	$defaults = array(
+		'avvo_username'  => get_option('avvo_username')
+	,	'avvo_api_key'   => get_option('avvo_api_key')
+	,	'avvo_lawyerid'  => get_option('avvo_lawyerid')
+	);
+	$vars = wp_parse_args($args, $defaults);
 
-$lawyer = $vars['avvo_lawyerid'];
+	$lawyer = $vars['avvo_lawyerid'];
 
-// Check the cache first
-$transient_name = $lawyer.'_avvo_results';
-$cached_avvo = get_transient($transient_name);
+	// Check the cache first
+	$transient_name = $lawyer.'_avvo_results';
+	$cached_avvo = get_transient($transient_name);
 
-// If there is no cache, go get the Avvo reviews
-if ($cached_avvo === false) {
+	// If there is no cache, go get the Avvo reviews
+	if ($cached_avvo === false) {
 
-$signed_url = 'https://'. $vars['avvo_username'] .':'. $vars['avvo_api_key'] .'@api.avvo.com/api/1/lawyers/'. $lawyer .'/reviews.json';
-$data = file_get_contents($signed_url,0,null,null);
-$response = json_decode($data);
+		$signed_url = 'https://'. $vars['avvo_username'] .':'. $vars['avvo_api_key'] .'@api.avvo.com/api/1/lawyers/'. $lawyer .'/reviews.json';
+		$data = file_get_contents($signed_url,0,null,null);
+		$response = json_decode($data);
 
-$requested_reviews = (array) $response;
-set_transient($transient_name, $requested_reviews, 1 * HOUR_IN_SECONDS);
+		$requested_reviews = (array) $response;
+		set_transient($transient_name, $requested_reviews, 1 * HOUR_IN_SECONDS);
 
-// Return all the things
-return $requested_reviews;
-
-} else {
-return $cached_avvo;
-}
+		// Return all the things
+		return $requested_reviews;
+	}
+	else {
+		return $cached_avvo;
+	}
 
 }
 
@@ -737,12 +780,14 @@ function LEPI_fb_link() {
 }
 
 // Twitter Link
-function LEPI_tw_link() {
+function LEPI_tw_link($handle='') {
 	global $post;
 	$id = $post->ID;
 	$permalink = get_permalink($id);
 
-	$string = $post->post_title .' (via @'. get_option('twitter_handle') .') '. $permalink;
+	if (strlen($handle)==0) $handle = LEPI_get_handles('twitter_handles', TRUE);
+
+	$string = $post->post_title .' (via @' . $handle . ') '. $permalink;
 	$href = 'http://twitter.com/home?status='. urlencode($string);
 
 	return $href;
@@ -762,5 +807,15 @@ function LEPI_li_link() {
 
 	$href .= '&source='. urlencode(get_bloginfo('sitetitle'));
 
+	return $href;
+}
+
+// Pinterest Link
+function LEPI_pi_link() {
+	$href = '//www.pinterest.com/pin/create/button/" data-pin-do="buttonBookmark"  data-pin-shape="round" data-pin-height="28';
+	if (!wp_script_is('pinterest', 'enqueued')) {
+		wp_register_script( 'pinterest', '//assets.pinterest.com/js/pinit.js', array(), false, true );
+		wp_enqueue_script('pinterest');
+	}
 	return $href;
 }
