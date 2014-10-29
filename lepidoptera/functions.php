@@ -564,16 +564,17 @@ function LEPI_get_tweets($max_tweets = 5, $twitter_id = FALSE) {
 					$k = 'created_at';
 					return (strtotime($a[$k]) < strtotime($b[$k])) ? 1 : -1;
 				});
+
+				$stored_timeout = get_option('tw_cache_expiration');
+				if ( is_numeric($stored_timeout) ) { $timeout = round( ( $stored_timeout * 60 ) ); }
+				else { $timeout = 600; }
+
+				set_transient($transient_name, $tweets_arr, $timeout);
+				$set_tweets = true;
 			}
-
-			$stored_timeout = get_option('tw_cache_expiration');
-			if ( is_numeric($stored_timeout) ) { $timeout = round( ( $stored_timeout * 60 ) ); }
-			else { $timeout = 600; }
-
-			set_transient($transient_name, $tweets_arr, $timeout);
-			$set_tweets = true;
 		}
-		if (isset($set_tweets)) { //parse the feed just once as it will be cached from now on
+
+		if (isset($set_tweets)) {
 			$tweets_raw = $tweets_arr;
 		}
 
