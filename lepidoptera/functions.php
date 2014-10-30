@@ -609,7 +609,7 @@ function LEPI_get_tweets($max_tweets = 5, $twitter_id = FALSE) {
 					$datetime->setTimestamp($processed_time);
 
 					$tweets[] = array(
-						'text'     		=> $tweet_text
+						'text'     		=> preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $tweet_text)
 					,	'timestamp' 	=> $processed_time
 					, 	'url'       	=> 'https://twitter.com/'.$tweet['handle'].'/status/'.$tweet['id_str']
 					,	'handle'		=> $tweet['handle']
