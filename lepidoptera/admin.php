@@ -126,12 +126,12 @@ function LEPI_update_options() {
 
 		/* Update Foursquare Settings Manually */
 		$foursquare_key = 'foursquare_url';
-		if ( count($_POST[$foursquare_key]) > 1 ) {
+		if ( isset($_POST[$foursquare_key]) && count($_POST[$foursquare_key]) > 1 ) {
 			foreach ( $_POST[$foursquare_key] as $foursquare_location ) {
 				if ( $foursquare_location != '' ) { $foursquare_locations[] = $foursquare_location; }
 			}
 		}
-		else {
+		elseif ( isset($_POST[$foursquare_key]) ) {
 			$foursquare_locations = $_POST[$foursquare_key];
 		}
 
