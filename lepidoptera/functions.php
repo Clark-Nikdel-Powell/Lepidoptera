@@ -511,7 +511,11 @@ function LEPI_get_tweets($max_tweets = 5, $twitter_id = FALSE) {
 		if ( $twitter_id !== FALSE ) {
 			$transient_name .= '_'.$twitter_id;
 		}
+		
 		$tweets_raw = get_transient($transient_name);
+		if ( is_string($tweets_raw) ) {
+			@$tweets_raw = json_decode($tweets_raw, true);
+		}
 		if ( $tweets_raw === false ) {
 
 			$tmhOAuth = new tmhOAuth(array(
@@ -547,6 +551,7 @@ function LEPI_get_tweets($max_tweets = 5, $twitter_id = FALSE) {
 				));
 
 				$tweets_raw = json_decode($tmhOAuth->response['response'], true);
+
 				if ( !isset($tweets_raw['errors']) ) {
 					foreach ($tweets_raw as &$tweet) {
 						$tweet['handle'] = $handle;
@@ -569,7 +574,7 @@ function LEPI_get_tweets($max_tweets = 5, $twitter_id = FALSE) {
 				if ( is_numeric($stored_timeout) ) { $timeout = round( ( $stored_timeout * 60 ) ); }
 				else { $timeout = 600; }
 
-				set_transient($transient_name, $tweets_arr, $timeout);
+				set_transient($transient_name, json_encode($tweets_arr), $timeout);
 				$set_tweets = true;
 			}
 		}
@@ -580,15 +585,16 @@ function LEPI_get_tweets($max_tweets = 5, $twitter_id = FALSE) {
 
 		$limit = 0;
 
-		if ( count($tweets_raw['tweets']) === 0 && count($tweets_raw['failed']) > 0 ){
-			 $tweets_raw['error'] .= 'There was an error getting tweets. The following accounts caused errors:<br/><br/>';
+		if ( ( !isset($tweets_raw['tweets']) || count($tweets_raw['tweets']) === 0 ) && (isset($tweets_raw['failed']) || count($tweets_raw['failed']) > 0 ) ){
+			 $tweets_raw['error'] = 'There was an error getting tweets. The following accounts caused errors:<br/><br/>';
 			 foreach ($tweets_raw['failed'] as $handle) {
 			 	$tweets_raw['error'] .= $handle.'<br/>';
 			 }
 			 return $tweets_raw;
 		}
-		else {
+		elseif ( isset($tweets_raw['tweets']) && count($tweets_raw['tweets']) > 0 ) {
 
+			$tweets = array();
 			foreach ( $tweets_raw['tweets'] as $tweet ) {
 
 				if ( count($tweets) <= $max_tweets  && $tweet['text'] ) {
@@ -609,7 +615,7 @@ function LEPI_get_tweets($max_tweets = 5, $twitter_id = FALSE) {
 					$datetime->setTimestamp($processed_time);
 
 					$tweets[] = array(
-						'text'     		=> $tweet_text
+						'text'     		=> preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $tweet_text)
 					,	'timestamp' 	=> $processed_time
 					, 	'url'       	=> 'https://twitter.com/'.$tweet['handle'].'/status/'.$tweet['id_str']
 					,	'handle'		=> $tweet['handle']
@@ -867,62 +873,71 @@ function LEPI_link($type) {
 // Email Link
 function LEPI_email_link() {
 	global $post;
-	$href = 'mailto:?subject='. $post->post_title .'&body='. get_permalink($post->ID);
+	$href = '';
+	if ( is_object($post) ) {
+		$href = 'mailto:?subject='. $post->post_title .'&body='. get_permalink($post->ID);
+	}
 	return $href;
 }
 
 // Facebook Link
 function LEPI_fb_link() {
 	global $post;
-	$id = $post->ID;
+	$href = '';
+	if ( is_object($post) ) {
+		$id = $post->ID;
 
-	$href = 'http://www.facebook.com/sharer/sharer.php?s=100';
+		$href = 'http://www.facebook.com/sharer/sharer.php?s=100';
 
-	$permalink = get_permalink($id);
-	if (isset($permalink))
-		$href .= '&p[url]='. $permalink;
+		$permalink = get_permalink($id);
+		if (isset($permalink))
+			$href .= '&p[url]='. $permalink;
 
-	$thumbnail = wp_get_attachment_image_src( get_post_thumbnail_id($id), 'large' );
-	if (isset($thumbnail[0]))
-		$href .= '&p[images][0]='. $thumbnail[0];
+		$thumbnail = wp_get_attachment_image_src( get_post_thumbnail_id($id), 'large' );
+		if (isset($thumbnail[0]))
+			$href .= '&p[images][0]='. $thumbnail[0];
 
-	$href .= '&p[title]='. urlencode($post->post_title);
+		$href .= '&p[title]='. urlencode($post->post_title);
 
-	$excerpt = $post->post_excerpt;
-	if (isset($excerpt))
-		$href .= '&p[summary]='. urlencode($excerpt);
-
+		$excerpt = $post->post_excerpt;
+		if (isset($excerpt))
+			$href .= '&p[summary]='. urlencode($excerpt);
+	}
 	return $href;
 }
 
 // Twitter Link
 function LEPI_tw_link($handle='') {
 	global $post;
-	$id = $post->ID;
-	$permalink = get_permalink($id);
+	$href = '';
+	if ( is_object($post) ) {
+		$id = $post->ID;
+		$permalink = get_permalink($id);
 
-	if (strlen($handle)==0) $handle = LEPI_get_handles('twitter_handles', TRUE);
+		if (strlen($handle)==0) $handle = LEPI_get_handles('twitter_handles', TRUE);
 
-	$string = $post->post_title .' (via @' . $handle . ') '. $permalink;
-	$href = 'http://twitter.com/home?status='. urlencode($string);
-
+		$string = $post->post_title .' (via @' . $handle . ') '. $permalink;
+		$href = 'http://twitter.com/home?status='. urlencode($string);
+	}
 	return $href;
 }
 
 function LEPI_li_link() {
 	global $post;
-	$id = $post->ID;
-	$href = 'http://www.linkedin.com/shareArticle?mini=true';
+	$href = '';
+	if ( is_object($post) ) {
+		$id = $post->ID;
+		$href = 'http://www.linkedin.com/shareArticle?mini=true';
 
-	$href .= '&url='. get_permalink($id);
-	$href .= '&title='. urlencode($post->post_title);
+		$href .= '&url='. get_permalink($id);
+		$href .= '&title='. urlencode($post->post_title);
 
-	$excerpt = $post->post_excerpt;
-	if (isset($excerpt))
-		$href .= '&summary='. urlencode($excerpt);
+		$excerpt = $post->post_excerpt;
+		if (isset($excerpt))
+			$href .= '&summary='. urlencode($excerpt);
 
-	$href .= '&source='. urlencode(get_bloginfo('sitetitle'));
-
+		$href .= '&source='. urlencode(get_bloginfo('sitetitle'));
+	}
 	return $href;
 }
 
