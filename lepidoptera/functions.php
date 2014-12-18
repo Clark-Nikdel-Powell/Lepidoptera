@@ -507,7 +507,7 @@ function LEPI_get_tweets($max_tweets = 5, $twitter_id = FALSE) {
 
 		global $LEPI_transient;
 		$transient_name = $LEPI_transient;
-		
+
 		if ( $twitter_id !== FALSE ) {
 			$transient_name .= '_'.$twitter_id;
 		}
@@ -521,13 +521,13 @@ function LEPI_get_tweets($max_tweets = 5, $twitter_id = FALSE) {
 			,	'user_secret'     => get_option('tw_access_token_secret')
 			));
 
-			if ($twitter_id===FALSE) { 	
+			if ($twitter_id===FALSE) {
 				$handles = get_option('twitter_handles');
 				if (is_string($handles) && $json = json_decode($handles)) {
 					$handles = $json;
 				}
 			}
-			else { 
+			else {
 				$handles = array($twitter_id);
 			}
 
@@ -690,7 +690,7 @@ function LEPI_get_yelps($args=0) {
 
 		// Return the data!
 		return $requested_yelps;
-	} 
+	}
 	else {
 		return $cached_yelps;
 	}
@@ -748,6 +748,121 @@ function LEPI_get_avvo_reviews($args=0) {
  * appearance ourselves.
  *
 **/
+
+function LEPI_link($type) {
+
+	if ( empty($type) ) {
+		return false;
+	}
+
+	global $post;
+	$id = $post->ID;
+
+	switch ($type) {
+
+		/*//////////////////////////////////////////////////////
+		//  Print Link  ///////////////////////////////////////
+		////////////////////////////////////////////////////*/
+
+		case 'print':
+
+			$href = 'href="#" onclick="window.print();"';
+
+			break;
+
+
+		/*//////////////////////////////////////////////////////
+		//  Email Link  ///////////////////////////////////////
+		////////////////////////////////////////////////////*/
+
+		case 'email':
+
+			$href = 'mailto:?subject='. $post->post_title .'&body='. get_permalink($id);
+
+			break;
+
+
+		/*//////////////////////////////////////////////////////
+		//  Facebook Link  ////////////////////////////////////
+		////////////////////////////////////////////////////*/
+
+		case 'facebook':
+
+			$href = 'http://www.facebook.com/sharer/sharer.php?s=100';
+
+			$permalink = get_permalink($id);
+			if (isset($permalink))
+				$href .= '&p[url]='. $permalink;
+
+			$thumbnail = wp_get_attachment_image_src( get_post_thumbnail_id($id), 'large' );
+			if (isset($thumbnail[0]))
+				$href .= '&p[images][0]='. $thumbnail[0];
+
+			$href .= '&p[title]='. urlencode($post->post_title);
+
+			$excerpt = $post->post_excerpt;
+			if (isset($excerpt))
+				$href .= '&p[summary]='. urlencode($excerpt);
+
+			break;
+
+
+		/*//////////////////////////////////////////////////////
+		//  Twitter Link  //////////////////////////////////////
+		////////////////////////////////////////////////////*/
+
+		case 'twitter':
+
+			$permalink = get_permalink($id);
+
+			if (strlen($handle)==0) $handle = LEPI_get_handles('twitter_handles', TRUE);
+
+			$string = $post->post_title .' (via @' . $handle . ') '. $permalink;
+			$href = 'http://twitter.com/home?status='. urlencode($string);
+
+			break;
+
+
+		/*//////////////////////////////////////////////////////
+		//  Linkedin Link  ////////////////////////////////////
+		////////////////////////////////////////////////////*/
+
+		case 'linkedin':
+
+			$href = 'http://www.linkedin.com/shareArticle?mini=true';
+
+			$href .= '&url='. get_permalink($id);
+			$href .= '&title='. urlencode($post->post_title);
+
+			$excerpt = $post->post_excerpt;
+			if (isset($excerpt))
+				$href .= '&summary='. urlencode($excerpt);
+
+			$href .= '&source='. urlencode(get_bloginfo('sitetitle'));
+
+			break;
+
+
+		/*//////////////////////////////////////////////////////
+		//  Pinterest Link  ///////////////////////////////////
+		////////////////////////////////////////////////////*/
+
+		case 'pinterest':
+
+			$href = '//www.pinterest.com/pin/create/button/" data-pin-do="buttonBookmark"  data-pin-shape="round" data-pin-height="28';
+			if (!wp_script_is('pinterest', 'enqueued')) {
+				wp_register_script( 'pinterest', '//assets.pinterest.com/js/pinit.js', array(), false, true );
+				wp_enqueue_script('pinterest');
+			}
+
+			break;
+
+	}
+
+	if ( !empty($type) ) {
+		return $href;
+	}
+}
 
 // Email Link
 function LEPI_email_link() {
@@ -819,4 +934,53 @@ function LEPI_pi_link() {
 		wp_enqueue_script('pinterest');
 	}
 	return $href;
+}
+
+// Share Nav
+function LEPI_share_nav($args) {
+
+	$defaults = array(
+		'echo' => true
+	,	'header' => '<h4>Share This:</h4>'
+	,	'networks' => array(
+			'facebook' => 'Share'
+		,	'twitter'  => 'Tweet'
+		,	'linkedin' => 'Post'
+		,	'email'    => 'Email'
+		,	'print'    => 'Print'
+		)
+	);
+
+	$vars = wp_parse_args( $args, $defaults );
+
+	if ( empty($vars['networks']) ) {
+		return false;
+	}
+
+	$networks = array();
+	foreach ($vars['networks'] as $network => $action) {
+
+		$icon = $network;
+		if ( $network == 'email' ) {
+			$icon = 'envelope';
+		}
+
+		$window_settings = '';
+		if ( $network != 'email' && $network != 'print' ) {
+			$window_settings = 'onclick="window.open(this.href, \'mywin\',\'left=20,top=20,width=500,height=500,toolbar=1,resizable=0\'); return false;"';
+		}
+
+		$networks[] = '<a class="'. $network .'" href="'. LEPI_link($network) .'" '. $window_settings .'><i class="fa fa-'. $icon .'"></i><span class="link-title">'. $action .'</span></a>';
+	}
+
+
+	$output = '<div class="share">'. $vars['header'] .'<div class="inside">'. implode("", $networks) .'</div></div>';
+
+	if ( $vars['echo'] == true ) {
+		echo $output;
+	}
+
+	else {
+		return $output;
+	}
 }
