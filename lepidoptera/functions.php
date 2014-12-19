@@ -511,7 +511,7 @@ function LEPI_get_tweets($max_tweets = 5, $twitter_id = FALSE) {
 		if ( $twitter_id !== FALSE ) {
 			$transient_name .= '_'.$twitter_id;
 		}
-		
+
 		$tweets_raw = get_transient($transient_name);
 		if ( is_string($tweets_raw) ) {
 			@$tweets_raw = json_decode($tweets_raw, true);
