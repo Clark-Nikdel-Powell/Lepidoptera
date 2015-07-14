@@ -50,18 +50,18 @@ function LEPI_styles() {
 function LEPI_register() {
 	global $LEPI_settings;
 	foreach ( $LEPI_settings as $setting => $options ) {
-		register_setting( 'LEPI', $setting ); 
+		register_setting( 'LEPI', $setting );
 	}
 }
 
-function LEPI_get_handles( $key, $single = FALSE ) { 
+function LEPI_get_handles( $key, $single = FALSE ) {
 	$handles = get_option($key);
 	if ( $handles_decoded = json_decode($handles) ) { $handles = $handles_decoded;}
 	if ( is_array($handles) && count($handles) > 0 ) {
 		if ( $single === TRUE ) { $return = $handles[0]; }
 		else { $return = $handles; }
 	}
-	elseif ( is_string($handles) ) { 
+	elseif ( is_string($handles) ) {
 		if ($single === TRUE ) { $return = $handles; }
 		else { $return = array( $handles ); }
 	}
@@ -103,7 +103,7 @@ function LEPI_get_trans() {
 			);
 		}
 	}
-	else { 
+	else {
 		$return = FALSE;
 	}
 	return $return;
@@ -140,7 +140,7 @@ function LEPI_update_options() {
 		if ( isset($_POST[$handles_key]) && count($_POST[$handles_key]) > 0 ) {
 			$handlesupd = array();
 			foreach ( $_POST[$handles_key] as $handle ) {
-				if ( is_string($handle) && strlen($handle) > 0 && !in_array( trim($handle), $handlesupd ) ) { 
+				if ( is_string($handle) && strlen($handle) > 0 && !in_array( trim($handle), $handlesupd ) ) {
 					$handlesupd[] = trim($handle);
 				}
 			}
@@ -160,7 +160,7 @@ function LEPI_update_options() {
 				delete_transient($transient['key']);
 			}
 		}
-		
+
 		$message .= '<div id="message" class="updated"><p>Twitter cache deleted.</p></div>';
 	}
 
@@ -338,7 +338,7 @@ function LEPI_social_settings() {
 	<tr valign="top">
 		<th scope="row">Twitter Handle</th>
 		<td>
-		
+
 		<div class="handle_add handle_cell">
 			<i class="dashicons dashicons-plus"></i>
 		</div>
@@ -373,7 +373,7 @@ function LEPI_social_settings() {
 	if ($transients) { ?>
 
 	<tr>
-		<td colspan="2"><? submit_button('Delete Twitter Cache', 'delete_twitter', 'delete_twitter_cache', false);  ?></td>
+		<td colspan="2"><?php submit_button('Delete Twitter Cache', 'delete_twitter', 'delete_twitter_cache', false);  ?></td>
 	</tr>
 	<tr>
 		<td colspan="2">
@@ -422,7 +422,7 @@ function LEPI_social_settings() {
 		<td><input type="text" id="yelp_token_secret" name="yelp_token_secret" value="<?php echo get_option('yelp_token_secret'); ?>" style="width:70%" /></td>
 	</tr>
 	<tr>
-		<td colspan="2"><? submit_button('Delete Yelp Cache', 'delete_yelp', 'delete_yelp_cache', false); ?></td>
+		<td colspan="2"><?php submit_button('Delete Yelp Cache', 'delete_yelp', 'delete_yelp_cache', false); ?></td>
 	</tr>
 </table>
 </div><!-- yelp_settigns -->
@@ -439,7 +439,7 @@ function LEPI_social_settings() {
 	<tr valign="top">
 		<th scope="row">
 			<?php if ( $pointer == 0 ) { ?>Foursquare URL<?php } ?>
-			<?php if ( ++$i === $numLocations ) { ?><a href="#" class="add_foursquare">Add Location +</a><? } ?>
+			<?php if ( ++$i === $numLocations ) { ?><a href="#" class="add_foursquare">Add Location +</a><?php } ?>
 		</th>
 		<td><input type="text" id="foursquare_url" name="foursquare_url[]" value="<?php echo $foursquare_location; ?>" style="width:70%" /></td>
 	</tr>
@@ -462,7 +462,7 @@ function LEPI_social_settings() {
 		<td><input type="text" id="avvo_lawyerid" name="avvo_lawyerid" value="<?php echo get_option('avvo_lawyerid'); ?>" style="width:70%" /></td>
 	</tr>
 	<tr>
-		<td colspan="2"><? submit_button('Delete Avvo Cache', 'delete_avvo', 'delete_avvo_cache', false); ?></td>
+		<td colspan="2"><?php submit_button('Delete Avvo Cache', 'delete_avvo', 'delete_avvo_cache', false); ?></td>
 	</tr>
 </table>
 </div><!-- yelp_settigns -->
