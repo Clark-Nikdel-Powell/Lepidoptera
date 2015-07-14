@@ -1,5 +1,20 @@
 <?php
 
+class LEPIDateTime extends DateTime
+{
+    public function setTimestamp( $timestamp )
+    {
+        $date = getdate( ( int ) $timestamp );
+        $this->setDate( $date['year'] , $date['mon'] , $date['mday'] );
+        $this->setTime( $date['hours'] , $date['minutes'] , $date['seconds'] );
+    }
+
+    public function getTimestamp()
+    {
+        return $this->format( 'U' );
+    }
+}
+
 /** ===============================================================================
  *
  * Provides Open Graph information in the header for Facebook
@@ -497,6 +512,11 @@ function LEPI_tw_button($args=0) {
  * @param string $twitter_id Twitter handle.. duh
  *
 **/
+function LEPI_cmp($a, $b) {
+	$k = 'created_at';
+	return (strtotime($a[$k]) < strtotime($b[$k])) ? 1 : -1;
+}
+
 
 function LEPI_get_tweets($max_tweets = 5, $twitter_id = FALSE) {
 
@@ -565,10 +585,8 @@ function LEPI_get_tweets($max_tweets = 5, $twitter_id = FALSE) {
 			}
 
 			if ( count($tweets_arr['tweets']) > 0) {
-				usort( $tweets_arr['tweets'], function($a, $b) {
-					$k = 'created_at';
-					return (strtotime($a[$k]) < strtotime($b[$k])) ? 1 : -1;
-				});
+
+				usort( $tweets_arr['tweets'], "LEPI_cmp" );
 
 				$stored_timeout = get_option('tw_cache_expiration');
 				if ( is_numeric($stored_timeout) ) { $timeout = round( ( $stored_timeout * 60 ) ); }
@@ -608,10 +626,10 @@ function LEPI_get_tweets($max_tweets = 5, $twitter_id = FALSE) {
 					$tweet_text = preg_replace('/(^|[\n\s])#([^\s"\t\n\r<:]*)/is', '$1<a href="http://twitter.com/search?q=%23$2">#$2</a>', $tweet_text);
 
 					// Time zone offsets
-					$timestamp = new DateTime($tweet['created_at']);
+					$timestamp = new LEPIDateTime($tweet['created_at']);
 					$offset = get_option('gmt_offset');
 					$processed_time = $timestamp->format('U') + ($offset*3600);
-					$datetime = new DateTime();
+					$datetime = new LEPIDateTime();
 					$datetime->setTimestamp($processed_time);
 
 					$tweets[] = array(
